@@ -41,11 +41,17 @@ class UserApplicationTest {
             .build();
         when(mockUserRepo.existsByUsername("alice")).thenReturn(false);
         when(mockPasswordEncoder.encode("raw-password")).thenReturn("hashed-password");
+        when(mockUserRepo.save(any())).thenAnswer(invocation -> {
+            User toSave = invocation.getArgument(0);
+            return User.reconstitute(1L, toSave.getUsername(), toSave.getPasswordHash(),
+                toSave.getNickname(), toSave.getAvatarUrl(), toSave.getRole());
+        });
 
         // when
         UserBO result = sut.register(registerBO);
 
         // then
+        assertThat(result.getId()).isEqualTo(1L);
         assertThat(result.getUsername()).isEqualTo("alice");
         assertThat(result.getNickname()).isEqualTo("Alice");
         assertThat(result.getRole()).isEqualTo(UserRole.USER);

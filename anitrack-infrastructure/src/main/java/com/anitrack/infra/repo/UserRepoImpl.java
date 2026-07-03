@@ -22,8 +22,10 @@ public class UserRepoImpl implements UserRepo {
     }
 
     @Override
-    public void save(User user) {
-        userMapper.insert(userConverter.toPO(user));
+    public User save(User user) {
+        UserPO po = userConverter.toPO(user);
+        userMapper.insert(po);
+        return userConverter.toDomain(po);
     }
 
     @Override

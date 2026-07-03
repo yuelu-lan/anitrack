@@ -26,8 +26,8 @@ public class UserApplication {
         }
         String passwordHash = passwordEncoder.encode(registerBO.getPassword());
         User user = User.register(registerBO.getUsername(), passwordHash, registerBO.getNickname());
-        userRepo.save(user);
-        return toBO(user);
+        User savedUser = userRepo.save(user);
+        return toBO(savedUser);
     }
 
     public UserBO login(UserLoginBO loginBO) {
