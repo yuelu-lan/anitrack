@@ -1,11 +1,12 @@
 package com.anitrack.domain.user.model;
 
 import com.anitrack.domain.user.enums.UserRole;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 
 @Getter
-@Builder
+@Builder(access = AccessLevel.PRIVATE)
 public class User {
 
     private Long id;
