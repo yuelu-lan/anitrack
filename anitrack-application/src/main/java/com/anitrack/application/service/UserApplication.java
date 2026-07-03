@@ -10,6 +10,7 @@ import com.anitrack.domain.user.repo.UserRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -18,6 +19,7 @@ public class UserApplication {
     private final UserRepo userRepo;
     private final PasswordEncoder passwordEncoder;
 
+    @Transactional
     public UserBO register(UserRegisterBO registerBO) {
         if (userRepo.existsByUsername(registerBO.getUsername())) {
             throw new AnitrackAppException(AppExceptionEnum.USERNAME_ALREADY_EXISTS);
