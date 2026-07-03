@@ -40,12 +40,12 @@ enum WatchStatus { WANT_TO_WATCH, WATCHING, WATCHED, DROPPED }
 
 | 当前状态 | 可转移至 |
 | --- | --- |
-| WANT_TO_WATCH | WATCHING、DROPPED |
+| WANT_TO_WATCH | WATCHING |
 | WATCHING | WATCHED、DROPPED |
-| WATCHED | DROPPED |
-| DROPPED | WANT_TO_WATCH、WATCHING |
+| WATCHED | （终态，无可转移状态） |
+| DROPPED | WATCHING |
 
-例如 `WATCHED` 不能直接回退到 `WANT_TO_WATCH`。`changeStatus(newStatus)` 方法查转移表校验，不合法则抛 `IllegalWatchStatusTransitionException`。
+`WATCHED` 为终态，不可转移至其他任何状态；`DROPPED → WATCHING`（重新观看）保留弃番时的 `currentEpisode` 进度，不清零。`changeStatus(newStatus)` 方法查转移表校验，不合法则抛 `IllegalWatchStatusTransitionException`。
 
 ### 跨上下文校验规则
 
@@ -63,6 +63,8 @@ Review { id, userId, animeId, score(1-10), content, createTime }
 "只有 `WATCHED` 状态才能评价"是跨上下文规则，放在 `ReviewDomainService` 里：查询 `WatchlistRepo` 确认状态后再委托创建，不合法抛 `ReviewNotAllowedException`。
 
 一个用户对同一番剧只能有一条 Review。
+
+支持修改（`updateReview()`），不支持删除。
 
 ## Community 上下文：社区互动（Phase 4 可选）
 

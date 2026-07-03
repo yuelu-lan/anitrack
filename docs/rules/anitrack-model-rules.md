@@ -15,10 +15,10 @@ public class WatchlistItem {
     private Integer currentEpisode;
 
     private static final Map<WatchStatus, Set<WatchStatus>> TRANSITIONS = Map.of(
-        WatchStatus.WANT_TO_WATCH, Set.of(WatchStatus.WATCHING, WatchStatus.DROPPED),
+        WatchStatus.WANT_TO_WATCH, Set.of(WatchStatus.WATCHING),
         WatchStatus.WATCHING, Set.of(WatchStatus.WATCHED, WatchStatus.DROPPED),
-        WatchStatus.WATCHED, Set.of(WatchStatus.DROPPED),
-        WatchStatus.DROPPED, Set.of(WatchStatus.WANT_TO_WATCH, WatchStatus.WATCHING)
+        WatchStatus.WATCHED, Set.of(),
+        WatchStatus.DROPPED, Set.of(WatchStatus.WATCHING)
     );
 
     public WatchStatusChangedEvent changeStatus(WatchStatus newStatus) {

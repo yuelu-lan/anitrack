@@ -138,9 +138,9 @@ void changeStatus_whenTransitionIsInvalid_shouldThrowException() {
 @ParameterizedTest(name = "{0} -> {1} should be allowed")
 @CsvSource({
     "WANT_TO_WATCH, WATCHING",
-    "WANT_TO_WATCH, DROPPED",
     "WATCHING, WATCHED",
-    "WATCHING, DROPPED"
+    "WATCHING, DROPPED",
+    "DROPPED, WATCHING"
 })
 void changeStatus_whenTransitionIsLegal_shouldSucceed(WatchStatus from, WatchStatus to) {
     WatchlistItem item = WatchlistItem.builder().status(from).build();
