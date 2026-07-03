@@ -6,7 +6,7 @@ public interface UserRepo {
 
     User getByUsername(String username);
 
-    void save(User user);
+    User save(User user);
 
     boolean existsByUsername(String username);
 }
