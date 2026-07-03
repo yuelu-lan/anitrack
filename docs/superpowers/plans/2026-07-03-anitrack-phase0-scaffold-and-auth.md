@@ -1793,6 +1793,8 @@ git commit -m "feat: 新增UserController注册登录接口与Web层集成测试
 - Consumes：`JwtTokenProvider`（Task 7）
 - Produces：可运行的 Spring Boot 应用；`UserContextHolder.setUserId(Long)`/`getUserId()`/`clear()`，供 Phase 1 及以后的 Controller 使用
 
+**实施后修订说明（Task 10 实际执行时发现的计划盲区）**：`ApplicationLoader.java` 已在 Task 9 提前创建（`@WebMvcTest(UserController.class)` 需要可被发现的 `@SpringBootConfiguration`），Task 10 实际是 Modify 而非 Create。且 `@MapperScan` 未如本节原计划直接加在 `ApplicationLoader` 上，而是新建 `anitrack-starter/src/main/java/com/anitrack/starter/config/MyBatisConfig.java` 单独承载：`@MapperScan` 通过 `@Import(MapperScannerRegistrar.class)` 生效，这类导入不受 `@WebMvcTest` 的 `TypeExcludeFilter` 约束，若挂在作为 `@SpringBootConfiguration` 根类的 `ApplicationLoader` 上，会导致所有以其为上下文源的切片测试无条件注册 `UserMapper` bean，因无数据源报 `BeanCreationException`（已复现验证：`UserControllerTest` 8 个用例全部失败，根因 `Property 'sqlSessionFactory' or 'sqlSessionTemplate' are required`）。抽取到独立 `@Configuration` 类后该问题消失，且不影响完整应用启动时的 Mapper 扫描效果（`MyBatisConfig` 位于 `scanBasePackages = "com.anitrack"` 范围内，会被正常组件扫描并生效）。
+
 - [ ] **Step 1: 编写失败的 UserContextHolderTest**
 
 ```java
