@@ -26,4 +26,16 @@ public class User {
             .role(UserRole.USER)
             .build();
     }
+
+    public static User reconstitute(Long id, String username, String passwordHash, String nickname,
+                                     String avatarUrl, UserRole role) {
+        return User.builder()
+            .id(id)
+            .username(username)
+            .passwordHash(passwordHash)
+            .nickname(nickname)
+            .avatarUrl(avatarUrl)
+            .role(role)
+            .build();
+    }
 }
