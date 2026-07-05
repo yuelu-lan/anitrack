@@ -10,6 +10,7 @@ import com.anitrack.domain.anime.repo.AnimeRepo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -21,6 +22,7 @@ public class AnimeApplication {
     private final BangumiGateway bangumiGateway;
     private final AnimeRepo animeRepo;
 
+    @Transactional
     public List<AnimeBO> searchAnime(String keyword) {
         List<Anime> searchResults;
         try {
