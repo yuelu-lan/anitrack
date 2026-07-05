@@ -142,7 +142,7 @@ anitrack/
 数据来自 Bangumi API，通过防腐层（ACL）转换为领域模型后本地只读缓存：
 
 ```
-Anime { id, bangumiId(外部ID), title, coverUrl, totalEpisodes, airDate, summary }
+Anime { id, bangumiId(外部ID), titleCn, titleOriginal, coverUrl, totalEpisodes, airDate, summary }
 ```
 
 业务代码不允许直接修改这些字段，只能通过 ACL 同步更新——"真相"在外部系统。`AnimeRepo` 负责本地缓存的查询与落库。
