@@ -1,13 +1,17 @@
 package com.anitrack.starter.converter;
 
+import com.anitrack.application.model.AnimeBO;
 import com.anitrack.application.model.UserBO;
 import com.anitrack.application.model.UserLoginBO;
 import com.anitrack.application.model.UserRegisterBO;
 import com.anitrack.starter.request.UserLoginReq;
 import com.anitrack.starter.request.UserRegisterReq;
+import com.anitrack.starter.response.AnimeResponse;
 import com.anitrack.starter.response.LoginResponse;
 import com.anitrack.starter.response.UserInfoResponse;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 public class HttpConverter {
@@ -41,5 +45,22 @@ public class HttpConverter {
             .token(token)
             .userInfo(bo2Response(bo))
             .build();
+    }
+
+    public AnimeResponse animeBO2Response(AnimeBO bo) {
+        return AnimeResponse.builder()
+            .id(bo.getId())
+            .bangumiId(bo.getBangumiId())
+            .titleCn(bo.getTitleCn())
+            .titleOriginal(bo.getTitleOriginal())
+            .coverUrl(bo.getCoverUrl())
+            .totalEpisodes(bo.getTotalEpisodes())
+            .airDate(bo.getAirDate())
+            .summary(bo.getSummary())
+            .build();
+    }
+
+    public List<AnimeResponse> animeBOList2Response(List<AnimeBO> boList) {
+        return boList.stream().map(this::animeBO2Response).toList();
     }
 }
