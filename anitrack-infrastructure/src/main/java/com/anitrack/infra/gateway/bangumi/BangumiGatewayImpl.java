@@ -22,23 +22,22 @@ public class BangumiGatewayImpl implements BangumiGateway {
 
     @Override
     public List<Anime> search(String keyword) {
-        BangumiSearchResponseDTO response;
         try {
-            response = bangumiRestClient.post()
+            BangumiSearchResponseDTO response = bangumiRestClient.post()
                 .uri("/v0/search/subjects?limit=20")
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(BangumiSearchRequestDTO.forAnimeKeyword(keyword))
                 .retrieve()
                 .body(BangumiSearchResponseDTO.class);
+
+            if (response == null || response.getData() == null) {
+                return List.of();
+            }
+            return response.getData().stream()
+                .map(bangumiConverter::toDomain)
+                .toList();
         } catch (RestClientException e) {
             throw new BangumiApiException("调用Bangumi搜索接口失败, keyword=" + keyword, e);
         }
-
-        if (response == null || response.getData() == null) {
-            return List.of();
-        }
-        return response.getData().stream()
-            .map(bangumiConverter::toDomain)
-            .toList();
     }
 }
