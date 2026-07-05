@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.anitrack.infra.dal.mapper.AnimeMapper">
+
+    <resultMap id="BaseResultMap" type="com.anitrack.infra.dal.po.AnimePO">
+        <id column="id" property="id"/>
+        <result column="bangumi_id" property="bangumiId"/>
+        <result column="title_cn" property="titleCn"/>
+        <result column="title_original" property="titleOriginal"/>
+        <result column="cover_url" property="coverUrl"/>
+        <result column="total_episodes" property="totalEpisodes"/>
+        <result column="air_date" property="airDate"/>
+        <result column="summary" property="summary"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, bangumi_id, title_cn, title_original, cover_url, total_episodes, air_date, summary, create_time, update_time
+    </sql>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM t_anime
+        WHERE id = #{id}
+    </select>
+
+    <select id="selectByBangumiId" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM t_anime
+        WHERE bangumi_id = #{bangumiId}
+    </select>
+
+    <insert id="insert" parameterType="com.anitrack.infra.dal.po.AnimePO" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO t_anime (bangumi_id, title_cn, title_original, cover_url, total_episodes, air_date, summary)
+        VALUES (#{bangumiId}, #{titleCn}, #{titleOriginal}, #{coverUrl}, #{totalEpisodes}, #{airDate}, #{summary})
+    </insert>
+
+    <update id="updateById" parameterType="com.anitrack.infra.dal.po.AnimePO">
+        UPDATE t_anime
+        SET title_cn = #{titleCn},
+            title_original = #{titleOriginal},
+            cover_url = #{coverUrl},
+            total_episodes = #{totalEpisodes},
+            air_date = #{airDate},
+            summary = #{summary}
+        WHERE id = #{id}
+    </update>
+
+</mapper>
