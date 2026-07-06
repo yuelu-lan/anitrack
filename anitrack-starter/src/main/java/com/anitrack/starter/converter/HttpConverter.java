@@ -4,11 +4,15 @@ import com.anitrack.application.model.AnimeBO;
 import com.anitrack.application.model.UserBO;
 import com.anitrack.application.model.UserLoginBO;
 import com.anitrack.application.model.UserRegisterBO;
+import com.anitrack.application.model.WatchlistItemBO;
+import com.anitrack.application.model.WatchlistItemViewBO;
 import com.anitrack.starter.request.UserLoginReq;
 import com.anitrack.starter.request.UserRegisterReq;
 import com.anitrack.starter.response.AnimeResponse;
 import com.anitrack.starter.response.LoginResponse;
 import com.anitrack.starter.response.UserInfoResponse;
+import com.anitrack.starter.response.WatchlistItemResponse;
+import com.anitrack.starter.response.WatchlistItemViewResponse;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -62,5 +66,32 @@ public class HttpConverter {
 
     public List<AnimeResponse> animeBOList2Response(List<AnimeBO> boList) {
         return boList.stream().map(this::animeBO2Response).toList();
+    }
+
+    public WatchlistItemResponse watchlistItemBO2Response(WatchlistItemBO bo) {
+        return WatchlistItemResponse.builder()
+            .id(bo.getId())
+            .animeId(bo.getAnimeId())
+            .status(bo.getStatus())
+            .currentEpisode(bo.getCurrentEpisode())
+            .updateTime(bo.getUpdateTime())
+            .build();
+    }
+
+    public WatchlistItemViewResponse watchlistItemViewBO2Response(WatchlistItemViewBO bo) {
+        return WatchlistItemViewResponse.builder()
+            .id(bo.getId())
+            .animeId(bo.getAnimeId())
+            .animeTitleCn(bo.getAnimeTitleCn())
+            .animeTitleOriginal(bo.getAnimeTitleOriginal())
+            .animeCoverUrl(bo.getAnimeCoverUrl())
+            .status(bo.getStatus())
+            .currentEpisode(bo.getCurrentEpisode())
+            .updateTime(bo.getUpdateTime())
+            .build();
+    }
+
+    public List<WatchlistItemViewResponse> watchlistItemViewBOList2Response(List<WatchlistItemViewBO> boList) {
+        return boList.stream().map(this::watchlistItemViewBO2Response).toList();
     }
 }
