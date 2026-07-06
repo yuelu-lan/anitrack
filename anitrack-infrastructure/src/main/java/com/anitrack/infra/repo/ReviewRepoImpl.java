@@ -46,7 +46,8 @@ public class ReviewRepoImpl implements ReviewRepo {
     public Review add(Review review) {
         ReviewPO po = reviewConverter.toPO(review);
         reviewMapper.insert(po);
-        return reviewConverter.toDomain(po);
+        ReviewPO persisted = reviewMapper.selectByUserAndAnime(po.getUserId(), po.getAnimeId());
+        return reviewConverter.toDomain(persisted);
     }
 
     @Override

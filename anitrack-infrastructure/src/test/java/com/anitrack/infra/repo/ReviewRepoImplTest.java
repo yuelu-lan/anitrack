@@ -10,6 +10,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -44,15 +45,27 @@ class ReviewRepoImplTest {
         // given
         Review review = Review.create(1L, 100L, 8, "很好看");
         ReviewPO po = new ReviewPO();
-        Review persisted = Review.reconstitute(20L, 1L, 100L, 8, "很好看", null);
+        po.setUserId(1L);
+        po.setAnimeId(100L);
+        ReviewPO persistedPo = new ReviewPO();
+        persistedPo.setId(20L);
+        persistedPo.setUserId(1L);
+        persistedPo.setAnimeId(100L);
+        persistedPo.setScore(8);
+        persistedPo.setContent("很好看");
+        persistedPo.setCreateTime(LocalDateTime.of(2026, 7, 6, 12, 0));
+        Review persisted = Review.reconstitute(20L, 1L, 100L, 8, "很好看", persistedPo.getCreateTime());
         when(mockReviewConverter.toPO(review)).thenReturn(po);
-        when(mockReviewConverter.toDomain(po)).thenReturn(persisted);
+        when(mockReviewMapper.selectByUserAndAnime(1L, 100L)).thenReturn(persistedPo);
+        when(mockReviewConverter.toDomain(persistedPo)).thenReturn(persisted);
 
         // when
         Review result = sut.add(review);
 
         // then
         verify(mockReviewMapper, times(1)).insert(po);
+        verify(mockReviewMapper, times(1)).selectByUserAndAnime(1L, 100L);
+        verify(mockReviewConverter, never()).toDomain(po);
         assertThat(result).isEqualTo(persisted);
     }
 
