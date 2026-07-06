@@ -21,8 +21,8 @@ import {
   getWatchlistDetail,
 } from '@/services/watchlist';
 import { getMyReviewDetail, listReviewsByAnime } from '@/services/review';
-import type { WatchStatus } from '@/types/watchlist';
-import type { ReviewWithUser } from '@/types/review';
+import type { WatchStatus, WatchlistItem } from '@/types/watchlist';
+import type { Review, ReviewWithUser } from '@/types/review';
 import ReviewFormModal from '@/components/ReviewFormModal';
 
 const { Title, Paragraph } = Typography;
@@ -64,11 +64,12 @@ export default function AnimeDetailPage() {
     data: watchlistItem,
     loading: watchlistLoading,
     run: refetchWatchlist,
-  } = useRequest(() => getWatchlistDetail(animeId).catch(() => undefined), {
-    refreshDeps: [animeId],
-  });
+  } = useRequest<WatchlistItem, []>(
+    () => getWatchlistDetail(animeId).catch(() => undefined),
+    { refreshDeps: [animeId] },
+  );
 
-  const { data: myReview, run: refetchMyReview } = useRequest(
+  const { data: myReview, run: refetchMyReview } = useRequest<Review, []>(
     () => getMyReviewDetail(animeId).catch(() => undefined),
     { refreshDeps: [animeId] },
   );
