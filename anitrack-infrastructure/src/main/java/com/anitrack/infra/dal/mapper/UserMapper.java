@@ -3,6 +3,8 @@ package com.anitrack.infra.dal.mapper;
 import com.anitrack.infra.dal.po.UserPO;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+
 public interface UserMapper {
 
     int insert(UserPO po);
@@ -10,4 +12,6 @@ public interface UserMapper {
     UserPO selectByUsername(@Param("username") String username);
 
     boolean existsByUsername(@Param("username") String username);
+
+    List<UserPO> selectByIds(@Param("ids") List<Long> ids);
 }
