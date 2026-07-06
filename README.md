@@ -2,7 +2,8 @@
 
 基于 Spring Boot 3 + Java 17 的 DDD 追番管理练习项目，采用六边形架构思想的多模块设计。
 
-当前进度：Phase 0（基础脚手架 + 用户注册登录）已完成。
+当前进度：Phase 0（基础脚手架 + 用户注册登录）、Phase 1a（番剧目录，Bangumi ACL）、
+Phase 1b（追番核心，状态机/进度）均已完成。
 
 ## 技术栈
 
@@ -61,5 +62,12 @@ DB_USERNAME=xxx DB_PASSWORD=xxx JWT_SECRET=xxx mvn -pl anitrack-starter spring-b
 | --- | --- | --- |
 | POST | `/api/user/register` | 用户注册 |
 | POST | `/api/user/login` | 用户登录，返回 JWT token |
+| POST | `/api/anime/search` | 番剧搜索（实时调用 Bangumi API，回填本地缓存） |
+| POST | `/api/anime/detail` | 番剧详情（只读本地缓存） |
+| POST | `/api/watchlist/add` | 加入追番 |
+| POST | `/api/watchlist/change_status` | 变更追番状态 |
+| POST | `/api/watchlist/update_progress` | 更新观看进度 |
+| POST | `/api/watchlist/detail` | 查询单条追番详情 |
+| POST | `/api/watchlist/list` | 查询我的追番列表（可选按状态筛选） |
 
-其余接口需携带 `Authorization: Bearer <token>` 请求头。
+除注册/登录外，其余接口均需携带 `Authorization: Bearer <token>` 请求头。
