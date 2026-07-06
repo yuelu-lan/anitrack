@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.umi/
+.umi-production/
+.umi-test/
+*.local.ts
+.DS_Store
