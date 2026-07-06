@@ -8,6 +8,8 @@ import com.anitrack.infra.dal.po.AnimePO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 @RequiredArgsConstructor
 public class AnimeRepoImpl implements AnimeRepo {
@@ -25,6 +27,16 @@ public class AnimeRepoImpl implements AnimeRepo {
     public Anime getByBangumiId(Long bangumiId) {
         AnimePO po = animeMapper.selectByBangumiId(bangumiId);
         return po == null ? null : animeConverter.toDomain(po);
+    }
+
+    @Override
+    public List<Anime> listByIds(List<Long> ids) {
+        if (ids.isEmpty()) {
+            return List.of();
+        }
+        return animeMapper.selectByIds(ids).stream()
+            .map(animeConverter::toDomain)
+            .toList();
     }
 
     @Override

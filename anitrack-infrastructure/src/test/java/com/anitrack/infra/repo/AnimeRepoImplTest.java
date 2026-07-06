@@ -12,6 +12,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -85,5 +86,31 @@ class AnimeRepoImplTest {
 
         // then
         assertThat(result).isNull();
+    }
+
+    @Test
+    void listByIds_whenIdsProvided_shouldReturnConvertedList() {
+        // given
+        AnimePO po = new AnimePO();
+        Anime anime = Anime.reconstitute(1L, 100L, "中文名", "Original Title", "http://cover.jpg", 12,
+            LocalDate.of(2024, 1, 1), "简介");
+        when(mockAnimeMapper.selectByIds(List.of(1L))).thenReturn(List.of(po));
+        when(mockAnimeConverter.toDomain(po)).thenReturn(anime);
+
+        // when
+        List<Anime> result = sut.listByIds(List.of(1L));
+
+        // then
+        assertThat(result).containsExactly(anime);
+    }
+
+    @Test
+    void listByIds_whenIdsEmpty_shouldReturnEmptyListWithoutQuerying() {
+        // when
+        List<Anime> result = sut.listByIds(List.of());
+
+        // then
+        assertThat(result).isEmpty();
+        verify(mockAnimeMapper, never()).selectByIds(any());
     }
 }
