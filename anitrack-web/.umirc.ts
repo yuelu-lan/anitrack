@@ -9,20 +9,13 @@ export default defineConfig({
   },
   npmClient: 'npm',
   routes: [
-    { path: '/login', component: 'Login' },
-    { path: '/register', component: 'Register' },
-    {
-      path: '/',
-      component: '@/layouts/index',
-      wrappers: ['@/wrappers/auth'],
-      routes: [
-        { path: '/', redirect: '/anime/search' },
-        { path: '/anime/search', component: 'AnimeSearch' },
-        { path: '/anime/:animeId', component: 'AnimeDetail' },
-        { path: '/watchlist', component: 'Watchlist' },
-        { path: '/reviews', component: 'MyReviews' },
-      ],
-    },
+    { path: '/login', component: 'Login', layout: false },
+    { path: '/register', component: 'Register', layout: false },
+    { path: '/', redirect: '/anime/search' },
+    { path: '/anime/search', component: 'AnimeSearch', wrappers: ['@/wrappers/auth'] },
+    { path: '/anime/:animeId', component: 'AnimeDetail', wrappers: ['@/wrappers/auth'] },
+    { path: '/watchlist', component: 'Watchlist', wrappers: ['@/wrappers/auth'] },
+    { path: '/reviews', component: 'MyReviews', wrappers: ['@/wrappers/auth'] },
   ],
   proxy: {
     '/api': {
