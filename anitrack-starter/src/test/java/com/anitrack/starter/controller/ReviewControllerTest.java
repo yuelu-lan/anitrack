@@ -284,6 +284,50 @@ class ReviewControllerTest {
     }
 
     @Test
+    void listByAnime_whenPageIsZero_shouldReturnBadRequest() throws Exception {
+        stubValidToken();
+
+        mockMvc.perform(post("/api/review/list_by_anime")
+                .header("Authorization", AUTH_HEADER_VALUE)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(Map.of("animeId", 100L, "page", 0))))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void listByAnime_whenPageIsNegative_shouldReturnBadRequest() throws Exception {
+        stubValidToken();
+
+        mockMvc.perform(post("/api/review/list_by_anime")
+                .header("Authorization", AUTH_HEADER_VALUE)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(Map.of("animeId", 100L, "page", -1))))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void listByAnime_whenPageSizeIsZero_shouldReturnBadRequest() throws Exception {
+        stubValidToken();
+
+        mockMvc.perform(post("/api/review/list_by_anime")
+                .header("Authorization", AUTH_HEADER_VALUE)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(Map.of("animeId", 100L, "pageSize", 0))))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void listByAnime_whenPageSizeExceedsMax_shouldReturnBadRequest() throws Exception {
+        stubValidToken();
+
+        mockMvc.perform(post("/api/review/list_by_anime")
+                .header("Authorization", AUTH_HEADER_VALUE)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(Map.of("animeId", 100L, "pageSize", 101))))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void myList_whenNoAuthorizationHeader_shouldReturnUnauthorized() throws Exception {
         mockMvc.perform(post("/api/review/my_list")
                 .contentType(MediaType.APPLICATION_JSON)
