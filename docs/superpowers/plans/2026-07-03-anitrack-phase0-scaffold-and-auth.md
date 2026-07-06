@@ -21,7 +21,6 @@
 - 不允许在 Controller 之外的层直接调用 `UserContextHolder`；应用层如需当前用户信息由 Controller 取出后作为参数传入（`docs/rules/anitrack-web-rules.md`）
 - 用户密码统一用 `BCryptPasswordEncoder` 加密存储与校验，不使用 MD5 或明文（`docs/rules/anitrack-web-rules.md`）
 - 版本号统一由根 `pom.xml` 的 `<dependencyManagement>` 管理，子模块 `<dependency>` 不单独指定 `<version>`（`docs/rules/anitrack-init-dependency-rules.md`）
-- 涉及 `git commit` 等提交操作，必须先向用户说明，由用户决定是否执行，不得自行提交（项目 `CLAUDE.md`）
 
 ---
 
@@ -500,7 +499,7 @@ target/
 Run: `mvn -q compile`
 Expected: 无报错，5 个模块全部 `BUILD SUCCESS`（此时各模块尚无 Java 源文件，属于空编译）
 
-- [ ] **Step 9: Commit（需先征得用户同意后再执行）**
+- [ ] **Step 9: Commit**
 
 ```bash
 git add pom.xml .gitignore anitrack-common/pom.xml anitrack-domain/pom.xml anitrack-infrastructure/pom.xml anitrack-application/pom.xml anitrack-starter/pom.xml
@@ -630,7 +629,7 @@ public interface UserRepo {
 Run: `mvn -q -pl anitrack-domain -am test -Dtest=UserTest`
 Expected: PASS
 
-- [ ] **Step 8: Commit（需先征得用户同意后再执行）**
+- [ ] **Step 8: Commit**
 
 ```bash
 git add anitrack-domain/src/main/java/com/anitrack/domain/common/AnitrackDomainException.java anitrack-domain/src/main/java/com/anitrack/domain/user anitrack-domain/src/test/java/com/anitrack/domain/user
@@ -759,7 +758,7 @@ public interface UserMapper {
 Run: `mvn -q -pl anitrack-infrastructure -am compile`
 Expected: `BUILD SUCCESS`（此阶段无法验证 SQL/XML 与真实数据库的一致性，需等 Task 10 端到端联调时用真实 MySQL 验证）
 
-- [ ] **Step 6: Commit（需先征得用户同意后再执行）**
+- [ ] **Step 6: Commit**
 
 ```bash
 git add anitrack-starter/src/main/resources/db/migration anitrack-infrastructure/src/main/java/com/anitrack/infra/dal anitrack-infrastructure/src/main/resources/mapper
@@ -848,7 +847,7 @@ public class UserRepoImpl implements UserRepo {
 Run: `mvn -q -pl anitrack-infrastructure -am compile`
 Expected: `BUILD SUCCESS`，`target/generated-sources/annotations` 下生成 `UserConverterImpl`
 
-- [ ] **Step 4: Commit（需先征得用户同意后再执行）**
+- [ ] **Step 4: Commit**
 
 ```bash
 git add anitrack-infrastructure/src/main/java/com/anitrack/infra/converter anitrack-infrastructure/src/main/java/com/anitrack/infra/repo
@@ -910,7 +909,7 @@ public class AnitrackAppException extends RuntimeException {
 Run: `mvn -q -pl anitrack-application -am compile`
 Expected: `BUILD SUCCESS`
 
-- [ ] **Step 4: Commit（需先征得用户同意后再执行）**
+- [ ] **Step 4: Commit**
 
 ```bash
 git add anitrack-application/src/main/java/com/anitrack/application/exception
@@ -1181,7 +1180,7 @@ public class UserApplication {
 Run: `mvn -q -pl anitrack-application -am test -Dtest=UserApplicationTest`
 Expected: PASS（5 个测试全部通过）
 
-- [ ] **Step 6: Commit（需先征得用户同意后再执行）**
+- [ ] **Step 6: Commit**
 
 ```bash
 git add anitrack-application/src/main/java/com/anitrack/application/model anitrack-application/src/main/java/com/anitrack/application/service anitrack-application/src/test/java/com/anitrack/application/service
@@ -1316,7 +1315,7 @@ public class JwtTokenProvider {
 Run: `mvn -q -pl anitrack-infrastructure -am test -Dtest=JwtTokenProviderTest`
 Expected: PASS
 
-- [ ] **Step 5: Commit（需先征得用户同意后再执行）**
+- [ ] **Step 5: Commit**
 
 ```bash
 git add anitrack-infrastructure/src/main/java/com/anitrack/infra/auth anitrack-infrastructure/src/test/java/com/anitrack/infra/auth
@@ -1456,7 +1455,7 @@ public class GlobalExceptionHandler {
 Run: `mvn -q -pl anitrack-starter -am compile`
 Expected: `BUILD SUCCESS`
 
-- [ ] **Step 5: Commit（需先征得用户同意后再执行）**
+- [ ] **Step 5: Commit**
 
 ```bash
 git add anitrack-starter/src/main/java/com/anitrack/starter/response anitrack-starter/src/main/java/com/anitrack/starter/config/GlobalExceptionHandler.java
@@ -1769,7 +1768,7 @@ public class UserController {
 Run: `mvn -q -pl anitrack-starter -am test -Dtest=UserControllerTest`
 Expected: PASS（7 个测试全部通过）
 
-- [ ] **Step 7: Commit（需先征得用户同意后再执行）**
+- [ ] **Step 7: Commit**
 
 ```bash
 git add anitrack-starter/src/main/java/com/anitrack/starter/request anitrack-starter/src/main/java/com/anitrack/starter/converter anitrack-starter/src/main/java/com/anitrack/starter/controller anitrack-starter/src/test/java/com/anitrack/starter/controller
@@ -2098,7 +2097,7 @@ Expected: `{"status":0,"message":"用户名已存在","data":null}`
 
 验证完成后按 `Ctrl+C` 停止应用。
 
-- [ ] **Step 12: Commit（需先征得用户同意后再执行）**
+- [ ] **Step 12: Commit**
 
 ```bash
 git add anitrack-common/src/main/java/com/anitrack/common/utils anitrack-common/src/test/java/com/anitrack/common/utils anitrack-starter/src/main/java/com/anitrack/starter/interceptor anitrack-starter/src/main/java/com/anitrack/starter/config anitrack-starter/src/main/java/com/anitrack/starter/ApplicationLoader.java anitrack-starter/src/main/resources/application.yml
@@ -2119,5 +2118,4 @@ git commit -m "feat: 新增JWT拦截器、Security配置与应用启动类，完
 
 ## 与用户的既定流程约束（重申）
 
-- 所有标注"需先征得用户同意后再执行"的 `git commit` 步骤，执行前必须先向用户说明将要提交的内容，由用户决定是否执行。
 - 数据库连接凭证与 JWT 密钥严禁写入任何已提交文件，仅通过运行时环境变量注入（Task 10 Step 11 的 `export` 命令仅用于本地手动联调，不应写入 `.env` 或提交到仓库）。

@@ -23,7 +23,6 @@
 - 断言统一使用 AssertJ `assertThat()`，禁止 `Assertions.assertEquals()`；Mock 交互验证必须明确指定次数（`times(1)` 等），不 Mock 值对象/DTO（`docs/rules/anitrack-unittest-rules.md`）
 - 应用层统一异常使用 `AnitrackAppException(AppExceptionEnum)` 构造函数；`AppExceptionEnum` 新增常量延续 40xxx 编码段，Review 上下文使用 403xx（Watchlist 已用 402xx）
 - 版本号统一由根 `pom.xml` 的 `<dependencyManagement>` 管理，子模块 `<dependency>` 不单独指定 `<version>`（`docs/rules/anitrack-init-dependency-rules.md`）
-- 用户已明确授权本计划执行期间的所有 `git commit` 步骤无需逐步征求同意，可直接执行（2026-07-06 用户在本计划执行前的明确指示，覆盖下方"Commit（需先征得用户同意后再执行）"字样）
 - 本机默认 `PATH` 上的 `mvn` 解析到 `/Users/ywy/opt/apache-maven-3.6.0/bin/mvn`（绑定 JDK 8），无法编译本项目（要求 JDK 17 + Maven ≥3.6.3）。执行本计划所有 `mvn` 命令前需先执行：
   ```bash
   export JAVA_HOME=/Library/Java/JavaVirtualMachines/temurin-17.jdk/Contents/Home
@@ -304,7 +303,7 @@ public class Review {
 Run: `mvn -q -pl anitrack-domain -am test -Dtest=ReviewTest -Dsurefire.failIfNoSpecifiedTests=false`
 Expected: PASS（10 个测试通过）
 
-- [ ] **Step 6: Commit（需先征得用户同意后再执行）**
+- [ ] **Step 6: Commit**
 
 ```bash
 git add anitrack-domain/src/main/java/com/anitrack/domain/review/exception/IllegalReviewScoreException.java anitrack-domain/src/main/java/com/anitrack/domain/review/model anitrack-domain/src/test/java/com/anitrack/domain/review/model
@@ -519,7 +518,7 @@ public class ReviewDomainService {
 Run: `mvn -q -pl anitrack-domain -am test -Dtest=ReviewDomainServiceTest -Dsurefire.failIfNoSpecifiedTests=false`
 Expected: PASS（4 个测试通过）
 
-- [ ] **Step 7: Commit（需先征得用户同意后再执行）**
+- [ ] **Step 7: Commit**
 
 ```bash
 git add anitrack-domain/src/main/java/com/anitrack/domain/review/exception anitrack-domain/src/main/java/com/anitrack/domain/review/repo anitrack-domain/src/main/java/com/anitrack/domain/review/service anitrack-domain/src/test/java/com/anitrack/domain/review/service
@@ -719,7 +718,7 @@ public interface UserMapper {
 Run: `mvn -q -pl anitrack-infrastructure -am compile`
 Expected: `BUILD SUCCESS`（此阶段无法验证 SQL/XML 与真实数据库的一致性，需等 Task 7 端到端联调时用真实 MySQL 验证）
 
-- [ ] **Step 8: Commit（需先征得用户同意后再执行）**
+- [ ] **Step 8: Commit**
 
 ```bash
 git add anitrack-starter/src/main/resources/db/migration/V4__create_review_table.sql anitrack-infrastructure/src/main/java/com/anitrack/infra/dal/po/ReviewPO.java anitrack-infrastructure/src/main/java/com/anitrack/infra/dal/mapper/ReviewMapper.java anitrack-infrastructure/src/main/resources/mapper/ReviewMapper.xml anitrack-infrastructure/src/main/java/com/anitrack/infra/dal/mapper/UserMapper.java anitrack-infrastructure/src/main/resources/mapper/UserMapper.xml
@@ -1101,7 +1100,7 @@ public class ReviewRepoImpl implements ReviewRepo {
 Run: `mvn -q -pl anitrack-infrastructure -am test -Dtest=ReviewRepoImplTest -Dsurefire.failIfNoSpecifiedTests=false`
 Expected: PASS（6 个测试通过），且 `target/generated-sources/annotations` 下生成 `ReviewConverterImpl`
 
-- [ ] **Step 11: Commit（需先征得用户同意后再执行）**
+- [ ] **Step 11: Commit**
 
 ```bash
 git add anitrack-domain/src/main/java/com/anitrack/domain/user/repo/UserRepo.java anitrack-infrastructure/src/main/java/com/anitrack/infra/repo/UserRepoImpl.java anitrack-infrastructure/src/test/java/com/anitrack/infra/repo/UserRepoImplTest.java anitrack-infrastructure/src/main/java/com/anitrack/infra/converter/ReviewConverter.java anitrack-infrastructure/src/main/java/com/anitrack/infra/repo/ReviewRepoImpl.java anitrack-infrastructure/src/test/java/com/anitrack/infra/repo/ReviewRepoImplTest.java
@@ -1690,7 +1689,7 @@ public class ReviewApplication {
 Run: `mvn -q -pl anitrack-application -am test -Dtest=ReviewApplicationTest -Dsurefire.failIfNoSpecifiedTests=false`
 Expected: PASS（12 个测试通过）
 
-- [ ] **Step 9: Commit（需先征得用户同意后再执行）**
+- [ ] **Step 9: Commit**
 
 ```bash
 git add anitrack-application/src/main/java/com/anitrack/application/exception/AppExceptionEnum.java anitrack-application/src/main/java/com/anitrack/application/model/ReviewBO.java anitrack-application/src/main/java/com/anitrack/application/model/ReviewWithUserViewBO.java anitrack-application/src/main/java/com/anitrack/application/model/ReviewWithAnimeViewBO.java anitrack-application/src/main/java/com/anitrack/application/model/ReviewPageBO.java anitrack-application/src/main/java/com/anitrack/application/assembler/ReviewAssembler.java anitrack-application/src/main/java/com/anitrack/application/config/DomainServiceConfig.java anitrack-application/src/main/java/com/anitrack/application/service/ReviewApplication.java anitrack-application/src/test/java/com/anitrack/application/service/ReviewApplicationTest.java
@@ -2344,7 +2343,7 @@ public class ReviewController {
 Run: `mvn -q -pl anitrack-starter -am test -Dtest=ReviewControllerTest -Dsurefire.failIfNoSpecifiedTests=false`
 Expected: PASS（16 个测试通过）
 
-- [ ] **Step 9: Commit（需先征得用户同意后再执行）**
+- [ ] **Step 9: Commit**
 
 ```bash
 git add anitrack-starter/src/main/java/com/anitrack/starter/response/PageResponse.java anitrack-starter/src/main/java/com/anitrack/starter/request/ReviewAddReq.java anitrack-starter/src/main/java/com/anitrack/starter/request/ReviewUpdateReq.java anitrack-starter/src/main/java/com/anitrack/starter/request/ReviewDetailReq.java anitrack-starter/src/main/java/com/anitrack/starter/request/ReviewListByAnimeReq.java anitrack-starter/src/main/java/com/anitrack/starter/response/ReviewResponse.java anitrack-starter/src/main/java/com/anitrack/starter/response/ReviewWithUserResponse.java anitrack-starter/src/main/java/com/anitrack/starter/response/ReviewWithAnimeResponse.java anitrack-starter/src/main/java/com/anitrack/starter/converter/HttpConverter.java anitrack-starter/src/main/java/com/anitrack/starter/controller/ReviewController.java anitrack-starter/src/test/java/com/anitrack/starter/controller/ReviewControllerTest.java
@@ -2536,6 +2535,5 @@ Expected: `{"status":1,"message":null,"data":[{"id":1,"animeId":1,"animeTitleCn"
 
 ## 与用户的既定流程约束（重申）
 
-- 用户已明确授权：本计划中所有标注"需先征得用户同意后再执行"的 `git commit` 步骤，无需逐步征求同意即可直接执行。
 - 本机默认 `mvn` 版本过旧（见 Global Constraints），执行本计划前必须先切换 `JAVA_HOME`/`PATH`，否则所有 `mvn` 命令都会因 Maven/JDK 版本不满足要求而失败。
 - Task 7 Step 2 的端到端联调依赖本地可用的 MySQL 环境，若当前环境不具备，可先完成 Step 1（自动化测试），Step 2 留到有本地 MySQL 的环境中执行。
