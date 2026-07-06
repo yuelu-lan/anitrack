@@ -27,7 +27,7 @@ anitrack:
     expiration: 86400000
   bangumi:
     base-url: https://api.bgm.tv
-    user-agent: anitrack-practice/1.0 (https://github.com/your-name/anitrack)
+    user-agent: anitrack-practice/1.0 (https://github.com/yuelu-lan/anitrack)
     connect-timeout-ms: 3000
     read-timeout-ms: 5000
 
