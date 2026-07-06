@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.anitrack.infra.dal.mapper.WatchlistItemMapper">
+
+    <resultMap id="BaseResultMap" type="com.anitrack.infra.dal.po.WatchlistItemPO">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="anime_id" property="animeId"/>
+        <result column="status" property="status"/>
+        <result column="current_episode" property="currentEpisode"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, user_id, anime_id, status, current_episode, create_time, update_time
+    </sql>
+
+    <select id="selectByUserAndAnime" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM t_watchlist_item
+        WHERE user_id = #{userId} AND anime_id = #{animeId}
+    </select>
+
+    <select id="selectByUser" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM t_watchlist_item
+        WHERE user_id = #{userId}
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+    </select>
+
+    <insert id="insert" parameterType="com.anitrack.infra.dal.po.WatchlistItemPO" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO t_watchlist_item (user_id, anime_id, status, current_episode)
+        VALUES (#{userId}, #{animeId}, #{status}, #{currentEpisode})
+    </insert>
+
+    <update id="updateById" parameterType="com.anitrack.infra.dal.po.WatchlistItemPO">
+        UPDATE t_watchlist_item
+        SET status = #{status},
+            current_episode = #{currentEpisode}
+        WHERE id = #{id}
+    </update>
+
+</mapper>
