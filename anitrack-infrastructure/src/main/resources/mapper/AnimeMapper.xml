@@ -35,6 +35,16 @@
         WHERE bangumi_id = #{bangumiId}
     </select>
 
+    <select id="selectByIds" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM t_anime
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
     <insert id="insert" parameterType="com.anitrack.infra.dal.po.AnimePO" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO t_anime (bangumi_id, title_cn, title_original, cover_url, total_episodes, air_date, summary)
         VALUES (#{bangumiId}, #{titleCn}, #{titleOriginal}, #{coverUrl}, #{totalEpisodes}, #{airDate}, #{summary})
