@@ -51,9 +51,10 @@ service/ReviewDomainService.java
       # Review.create() + ReviewRepo.add()
 exception/ReviewNotAllowedException.java extends AnitrackDomainException
 exception/ReviewAlreadyExistsException.java extends AnitrackDomainException
-exception/ReviewNotFoundException.java extends AnitrackDomainException
 exception/IllegalReviewScoreException.java extends AnitrackDomainException
 ```
+
+不设 `ReviewNotFoundException` 领域异常：`updateReview`/`getMyReview` 均为纯读查询或单聚合操作，不经过 `ReviewDomainService`，"查不到"直接在 `ReviewApplication` 判断并抛 `AnitrackAppException(REVIEW_NOT_FOUND)`（与 Watchlist 侧 `getWatchlistItem` 的既有模式一致）——不像 `WatchlistItemNotFoundException` 那样有一个真正经过 `XxxDomainService` 的调用路径，声明一个不会被抛出的领域异常类没有意义。
 
 `updateReview`/`getMyReview`/`listByAnime`/`listMyReviews` 是单聚合操作或纯读查询，不需要跨上下文校验，直接在 `ReviewApplication` 编排，不经过 `ReviewDomainService`（与 Watchlist 侧 `changeStatus`/`getWatchlistItem`/`listMyWatchlist` 同理）。
 
