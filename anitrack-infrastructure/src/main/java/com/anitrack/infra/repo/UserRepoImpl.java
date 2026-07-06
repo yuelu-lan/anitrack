@@ -8,6 +8,8 @@ import com.anitrack.infra.dal.po.UserPO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 @RequiredArgsConstructor
 public class UserRepoImpl implements UserRepo {
@@ -31,5 +33,15 @@ public class UserRepoImpl implements UserRepo {
     @Override
     public boolean existsByUsername(String username) {
         return userMapper.existsByUsername(username);
+    }
+
+    @Override
+    public List<User> listByIds(List<Long> ids) {
+        if (ids.isEmpty()) {
+            return List.of();
+        }
+        return userMapper.selectByIds(ids).stream()
+            .map(userConverter::toDomain)
+            .toList();
     }
 }

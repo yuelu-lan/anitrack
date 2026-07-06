@@ -1,6 +1,10 @@
 package com.anitrack.starter.converter;
 
 import com.anitrack.application.model.AnimeBO;
+import com.anitrack.application.model.ReviewBO;
+import com.anitrack.application.model.ReviewPageBO;
+import com.anitrack.application.model.ReviewWithAnimeViewBO;
+import com.anitrack.application.model.ReviewWithUserViewBO;
 import com.anitrack.application.model.UserBO;
 import com.anitrack.application.model.UserLoginBO;
 import com.anitrack.application.model.UserRegisterBO;
@@ -10,6 +14,10 @@ import com.anitrack.starter.request.UserLoginReq;
 import com.anitrack.starter.request.UserRegisterReq;
 import com.anitrack.starter.response.AnimeResponse;
 import com.anitrack.starter.response.LoginResponse;
+import com.anitrack.starter.response.PageResponse;
+import com.anitrack.starter.response.ReviewResponse;
+import com.anitrack.starter.response.ReviewWithAnimeResponse;
+import com.anitrack.starter.response.ReviewWithUserResponse;
 import com.anitrack.starter.response.UserInfoResponse;
 import com.anitrack.starter.response.WatchlistItemResponse;
 import com.anitrack.starter.response.WatchlistItemViewResponse;
@@ -93,5 +101,56 @@ public class HttpConverter {
 
     public List<WatchlistItemViewResponse> watchlistItemViewBOList2Response(List<WatchlistItemViewBO> boList) {
         return boList.stream().map(this::watchlistItemViewBO2Response).toList();
+    }
+
+    public ReviewResponse reviewBO2Response(ReviewBO bo) {
+        return ReviewResponse.builder()
+            .id(bo.getId())
+            .animeId(bo.getAnimeId())
+            .score(bo.getScore())
+            .content(bo.getContent())
+            .createTime(bo.getCreateTime())
+            .build();
+    }
+
+    public ReviewWithUserResponse reviewWithUserViewBO2Response(ReviewWithUserViewBO bo) {
+        return ReviewWithUserResponse.builder()
+            .id(bo.getId())
+            .userId(bo.getUserId())
+            .userNickname(bo.getUserNickname())
+            .userAvatarUrl(bo.getUserAvatarUrl())
+            .score(bo.getScore())
+            .content(bo.getContent())
+            .createTime(bo.getCreateTime())
+            .build();
+    }
+
+    public ReviewWithAnimeResponse reviewWithAnimeViewBO2Response(ReviewWithAnimeViewBO bo) {
+        return ReviewWithAnimeResponse.builder()
+            .id(bo.getId())
+            .animeId(bo.getAnimeId())
+            .animeTitleCn(bo.getAnimeTitleCn())
+            .animeTitleOriginal(bo.getAnimeTitleOriginal())
+            .animeCoverUrl(bo.getAnimeCoverUrl())
+            .score(bo.getScore())
+            .content(bo.getContent())
+            .createTime(bo.getCreateTime())
+            .build();
+    }
+
+    public List<ReviewWithAnimeResponse> reviewWithAnimeViewBOList2Response(List<ReviewWithAnimeViewBO> boList) {
+        return boList.stream().map(this::reviewWithAnimeViewBO2Response).toList();
+    }
+
+    public PageResponse<ReviewWithUserResponse> reviewPageBO2Response(ReviewPageBO<ReviewWithUserViewBO> pageBO) {
+        List<ReviewWithUserResponse> list = pageBO.getList().stream()
+            .map(this::reviewWithUserViewBO2Response)
+            .toList();
+        return PageResponse.<ReviewWithUserResponse>builder()
+            .pageNum(pageBO.getPage())
+            .pageSize(pageBO.getPageSize())
+            .total(pageBO.getTotal())
+            .list(list)
+            .build();
     }
 }
