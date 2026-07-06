@@ -70,17 +70,19 @@ TDD，每个 Task 独立 commit）：
 （绑定 JDK 8），无法编译本项目（要求 JDK 17 + Maven ≥3.6.3）。全程改用
 `JAVA_HOME=.../temurin-17.jdk` + `PATH=/opt/homebrew/opt/maven/bin:$PATH`（Maven 3.9.16）。
 
-**6. 沙箱环境无公网出口，也没有本地 MySQL 凭据**
+**6. Task 7 Step 3 真实端到端联调**
 
-计划里 Task 7 Step 3 要求真实起服务、连真实 MySQL、调真实 `api.bgm.tv` 做端到端联调。实施前先用
-`curl`/`mysqladmin ping` 探测确认：沙箱访问不了 `api.bgm.tv`（连接超时），本地 MySQL 服务在运行但没有
-密码。因此 Task 7 只完成了 Step 1（`application.yml` 配置）+ Step 2（编译测试），Step 3 的真实联调
-留给用户在自己机器上手动执行（见 `docs/superpowers/notes/2026-07-05-anitrack-phase1a-manual-followup.md`）。
+实施 Task 7 时先用 `curl`/`mysqladmin ping` 探测确认沙箱访问不了 `api.bgm.tv`、本地 MySQL 也没有
+凭据，因此当时只完成了 Step 1（`application.yml` 配置）+ Step 2（编译测试），Step 3 的真实联调
+先记为用户手动待办。之后用户提供了 `application-local.yml` 里的真实本地 MySQL 密码，重新探测发现
+`api.bgm.tv` 实际可以访问（此前是一次性网络抖动，不是永久限制）。补上 `user-agent` 配置的真实仓库
+地址后，用 `SPRING_PROFILES_ACTIVE=local` 直接跑通了完整的端到端验证：真实 MySQL 建表、真实调用
+Bangumi API 搜索（拿到"败犬女主太多了"等真实条目数据）、JWT 鉴权拦截、404 场景、upsert 幂等性，
+全部符合预期，细节见 `docs/superpowers/notes/2026-07-05-anitrack-phase1a-manual-followup.md`。
 
 ## 最终结果
 
 - `mvn test`：5 模块全过，44 个测试 0 失败（新增 `AnimeTest`/`AnimeRepoImplTest`/`BangumiConverterTest`/
   `AnimeApplicationTest`/`AnimeControllerTest` 共 19 个用例）
+- 真实 MySQL + 真实 Bangumi API 端到端联调已完成，行为与设计文档一致，无新问题
 - Phase 1a 全部完成并已合并到 main（本地，未 push），worktree 已清理
-- 遗留待办（需要用户本地环境）：真实 MySQL + 真实 Bangumi API 端到端联调、`application.yml` 里的
-  `user-agent` 占位符替换为真实仓库地址——详见 manual-followup 文档
