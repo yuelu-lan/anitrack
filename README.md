@@ -8,6 +8,7 @@
 - Phase 1a：番剧目录（Bangumi ACL）
 - Phase 1b：追番核心（状态机/进度）
 - Phase 2：评价（评分/评论）
+- 前端：`webui/`（UmiJS Max + Ant Design，覆盖全部 14 个接口的操作界面）
 
 ## 技术栈
 
@@ -24,6 +25,15 @@
 | Bean 拷贝 | MapStruct |
 | 单元测试 | JUnit5 + Mockito + AssertJ |
 
+前端（`webui/`）：
+
+| 分类 | 选型 |
+| --- | --- |
+| 框架 | UmiJS Max（`@umijs/max` 4.6.71） |
+| UI 组件库 | Ant Design 5 |
+| 语言 | TypeScript |
+| 包管理 | npm |
+
 ## 模块结构
 
 ```
@@ -32,10 +42,12 @@ anitrack/
 ├── anitrack-application/      # 应用服务层：用例编排
 ├── anitrack-domain/           # 领域核心层：聚合根/领域服务/仓储接口
 ├── anitrack-infrastructure/   # 基础设施层：仓储实现/网关/持久化
-└── anitrack-common/           # 公共组件层：dto/enums/utils
+├── anitrack-common/           # 公共组件层：dto/enums/utils
+└── webui/                     # 前端：独立 npm 工程，UmiJS Max + Ant Design
 ```
 
-依赖方向：`starter → application → domain`，`infrastructure → domain`。
+- 后端模块依赖方向：`starter → application → domain`，`infrastructure → domain`
+- `webui/` 是独立的前端工程，不属于 Maven 多模块，通过 dev server 代理调用后端 `/api`
 
 详细规范见 [`docs/rules/anitrack-project-rules.md`](docs/rules/anitrack-project-rules.md)。
 
@@ -59,6 +71,16 @@ DB_USERNAME=xxx DB_PASSWORD=xxx JWT_SECRET=xxx mvn -pl anitrack-starter spring-b
 ```
 
 服务默认监听 `8080` 端口，数据库表结构由 Flyway 自动创建。
+
+**启动前端**：
+
+```bash
+cd webui
+npm install
+npm run dev
+```
+
+前端默认监听 `8000` 端口，已配置代理将 `/api` 转发到后端 `http://localhost:8080`，无需后端配置 CORS。浏览器打开 `http://localhost:8000` 即可使用。
 
 ## 已实现接口
 
