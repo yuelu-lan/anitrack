@@ -1,5 +1,6 @@
 package com.anitrack.domain.watchlist.model;
 
+import com.anitrack.domain.anime.exception.AnimeTotalEpisodesInvalidException;
 import com.anitrack.domain.watchlist.enums.WatchStatus;
 import com.anitrack.domain.watchlist.exception.IllegalWatchProgressException;
 import com.anitrack.domain.watchlist.exception.IllegalWatchStatusTransitionException;
@@ -52,9 +53,15 @@ public class WatchlistItem {
             .build();
     }
 
-    public WatchStatusChangedEvent changeStatus(WatchStatus newStatus) {
+    public WatchStatusChangedEvent changeStatus(WatchStatus newStatus, Integer totalEpisodes) {
         if (!TRANSITIONS.getOrDefault(this.status, Set.of()).contains(newStatus)) {
             throw new IllegalWatchStatusTransitionException(this.status, newStatus);
+        }
+        if (newStatus == WatchStatus.WATCHED) {
+            if (totalEpisodes == null || totalEpisodes <= 0) {
+                throw new AnimeTotalEpisodesInvalidException(this.animeId);
+            }
+            this.currentEpisode = totalEpisodes;
         }
         WatchStatus oldStatus = this.status;
         this.status = newStatus;
