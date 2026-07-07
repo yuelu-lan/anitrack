@@ -1,5 +1,6 @@
 package com.anitrack.application.service;
 
+import com.anitrack.application.converter.UserConverter;
 import com.anitrack.application.exception.AnitrackAppException;
 import com.anitrack.application.model.UserBO;
 import com.anitrack.application.model.UserLoginBO;
@@ -28,12 +29,14 @@ class UserApplicationTest {
     @Mock
     private PasswordEncoder mockPasswordEncoder;
 
+    @Mock
+    private UserConverter mockUserConverter;
+
     private UserApplication sut;
 
     @Test
     void register_whenUsernameNotExists_shouldSaveAndReturnUserBO() {
-        // given
-        sut = new UserApplication(mockUserRepo, mockPasswordEncoder);
+        sut = new UserApplication(mockUserRepo, mockPasswordEncoder, mockUserConverter);
         UserRegisterBO registerBO = UserRegisterBO.builder()
             .username("alice")
             .password("raw-password")
@@ -46,16 +49,12 @@ class UserApplicationTest {
             return User.reconstitute(1L, toSave.getUsername(), toSave.getPasswordHash(),
                 toSave.getNickname(), toSave.getAvatarUrl(), toSave.getRole());
         });
+        UserBO expectedBO = UserBO.builder().id(1L).username("alice").nickname("Alice").role(UserRole.USER).build();
+        when(mockUserConverter.user2BO(any())).thenReturn(expectedBO);
 
-        // when
         UserBO result = sut.register(registerBO);
 
-        // then
-        assertThat(result.getId()).isEqualTo(1L);
-        assertThat(result.getUsername()).isEqualTo("alice");
-        assertThat(result.getNickname()).isEqualTo("Alice");
-        assertThat(result.getRole()).isEqualTo(UserRole.USER);
-
+        assertThat(result).isEqualTo(expectedBO);
         ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
         verify(mockUserRepo, times(1)).save(captor.capture());
         assertThat(captor.getValue().getPasswordHash()).isEqualTo("hashed-password");
@@ -63,8 +62,7 @@ class UserApplicationTest {
 
     @Test
     void register_whenUsernameExists_shouldThrowException() {
-        // given
-        sut = new UserApplication(mockUserRepo, mockPasswordEncoder);
+        sut = new UserApplication(mockUserRepo, mockPasswordEncoder, mockUserConverter);
         UserRegisterBO registerBO = UserRegisterBO.builder()
             .username("alice")
             .password("raw-password")
@@ -72,7 +70,6 @@ class UserApplicationTest {
             .build();
         when(mockUserRepo.existsByUsername("alice")).thenReturn(true);
 
-        // when & then
         assertThatThrownBy(() -> sut.register(registerBO))
             .isInstanceOf(AnitrackAppException.class)
             .hasMessageContaining("用户名已存在");
@@ -82,29 +79,25 @@ class UserApplicationTest {
 
     @Test
     void login_whenCredentialsAreValid_shouldReturnUserBO() {
-        // given
-        sut = new UserApplication(mockUserRepo, mockPasswordEncoder);
+        sut = new UserApplication(mockUserRepo, mockPasswordEncoder, mockUserConverter);
         UserLoginBO loginBO = UserLoginBO.builder().username("alice").password("raw-password").build();
         User existingUser = User.reconstitute(1L, "alice", "hashed-password", "Alice", null, UserRole.USER);
         when(mockUserRepo.getByUsername("alice")).thenReturn(existingUser);
         when(mockPasswordEncoder.matches("raw-password", "hashed-password")).thenReturn(true);
+        UserBO expectedBO = UserBO.builder().id(1L).username("alice").build();
+        when(mockUserConverter.user2BO(existingUser)).thenReturn(expectedBO);
 
-        // when
         UserBO result = sut.login(loginBO);
 
-        // then
-        assertThat(result.getId()).isEqualTo(1L);
-        assertThat(result.getUsername()).isEqualTo("alice");
+        assertThat(result).isEqualTo(expectedBO);
     }
 
     @Test
     void login_whenUserNotFound_shouldThrowException() {
-        // given
-        sut = new UserApplication(mockUserRepo, mockPasswordEncoder);
+        sut = new UserApplication(mockUserRepo, mockPasswordEncoder, mockUserConverter);
         UserLoginBO loginBO = UserLoginBO.builder().username("unknown").password("raw-password").build();
         when(mockUserRepo.getByUsername("unknown")).thenReturn(null);
 
-        // when & then
         assertThatThrownBy(() -> sut.login(loginBO))
             .isInstanceOf(AnitrackAppException.class)
             .hasMessageContaining("用户名或密码错误");
@@ -112,14 +105,12 @@ class UserApplicationTest {
 
     @Test
     void login_whenPasswordIncorrect_shouldThrowException() {
-        // given
-        sut = new UserApplication(mockUserRepo, mockPasswordEncoder);
+        sut = new UserApplication(mockUserRepo, mockPasswordEncoder, mockUserConverter);
         UserLoginBO loginBO = UserLoginBO.builder().username("alice").password("wrong-password").build();
         User existingUser = User.reconstitute(1L, "alice", "hashed-password", null, null, UserRole.USER);
         when(mockUserRepo.getByUsername("alice")).thenReturn(existingUser);
         when(mockPasswordEncoder.matches("wrong-password", "hashed-password")).thenReturn(false);
 
-        // when & then
         assertThatThrownBy(() -> sut.login(loginBO))
             .isInstanceOf(AnitrackAppException.class)
             .hasMessageContaining("用户名或密码错误");

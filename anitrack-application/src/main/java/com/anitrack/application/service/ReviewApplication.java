@@ -1,6 +1,7 @@
 package com.anitrack.application.service;
 
 import com.anitrack.application.assembler.ReviewAssembler;
+import com.anitrack.application.converter.ReviewConverter;
 import com.anitrack.application.exception.AnitrackAppException;
 import com.anitrack.application.exception.AppExceptionEnum;
 import com.anitrack.application.model.ReviewBO;
@@ -32,6 +33,7 @@ public class ReviewApplication {
     private final UserRepo userRepo;
     private final AnimeRepo animeRepo;
     private final ReviewAssembler reviewAssembler;
+    private final ReviewConverter reviewConverter;
 
     @Transactional
     public ReviewBO addReview(Long userId, Long animeId, Integer score, String content) {
@@ -45,7 +47,7 @@ public class ReviewApplication {
         } catch (IllegalReviewScoreException e) {
             throw new AnitrackAppException(AppExceptionEnum.ILLEGAL_REVIEW_SCORE);
         }
-        return toBO(review);
+        return reviewConverter.review2BO(review);
     }
 
     @Transactional
@@ -60,7 +62,7 @@ public class ReviewApplication {
             throw new AnitrackAppException(AppExceptionEnum.ILLEGAL_REVIEW_SCORE);
         }
         reviewRepo.update(review);
-        return toBO(review);
+        return reviewConverter.review2BO(review);
     }
 
     public ReviewBO getMyReview(Long userId, Long animeId) {
@@ -68,7 +70,7 @@ public class ReviewApplication {
         if (review == null) {
             throw new AnitrackAppException(AppExceptionEnum.REVIEW_NOT_FOUND);
         }
-        return toBO(review);
+        return reviewConverter.review2BO(review);
     }
 
     public ReviewPageBO<ReviewWithUserViewBO> listByAnime(Long animeId, int page, int pageSize) {
@@ -91,15 +93,5 @@ public class ReviewApplication {
         List<Long> animeIds = reviews.stream().map(Review::getAnimeId).toList();
         List<Anime> animes = animeRepo.listByIds(animeIds);
         return reviewAssembler.assembleWithAnime(reviews, animes);
-    }
-
-    private ReviewBO toBO(Review review) {
-        return ReviewBO.builder()
-            .id(review.getId())
-            .animeId(review.getAnimeId())
-            .score(review.getScore())
-            .content(review.getContent())
-            .createTime(review.getCreateTime())
-            .build();
     }
 }

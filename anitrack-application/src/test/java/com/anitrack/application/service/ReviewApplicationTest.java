@@ -1,6 +1,7 @@
 package com.anitrack.application.service;
 
 import com.anitrack.application.assembler.ReviewAssembler;
+import com.anitrack.application.converter.ReviewConverter;
 import com.anitrack.application.exception.AnitrackAppException;
 import com.anitrack.application.model.ReviewBO;
 import com.anitrack.application.model.ReviewPageBO;
@@ -48,6 +49,9 @@ class ReviewApplicationTest {
     @Mock
     private ReviewAssembler mockReviewAssembler;
 
+    @Mock
+    private ReviewConverter mockReviewConverter;
+
     @InjectMocks
     private ReviewApplication sut;
 
@@ -56,6 +60,8 @@ class ReviewApplicationTest {
         // given
         Review review = Review.reconstitute(20L, 1L, 100L, 8, "很好看", null);
         when(mockReviewDomainService.addReview(1L, 100L, 8, "很好看")).thenReturn(review);
+        ReviewBO expectedBO = ReviewBO.builder().id(20L).score(8).build();
+        when(mockReviewConverter.review2BO(review)).thenReturn(expectedBO);
 
         // when
         ReviewBO result = sut.addReview(1L, 100L, 8, "很好看");
@@ -106,6 +112,8 @@ class ReviewApplicationTest {
         // given
         Review review = Review.reconstitute(20L, 1L, 100L, 8, "很好看", null);
         when(mockReviewRepo.getByUserAndAnime(1L, 100L)).thenReturn(review);
+        ReviewBO expectedBO = ReviewBO.builder().score(5).content("重新打分").build();
+        when(mockReviewConverter.review2BO(review)).thenReturn(expectedBO);
 
         // when
         ReviewBO result = sut.updateReview(1L, 100L, 5, "重新打分");
@@ -143,6 +151,8 @@ class ReviewApplicationTest {
         // given
         Review review = Review.reconstitute(20L, 1L, 100L, 8, "很好看", null);
         when(mockReviewRepo.getByUserAndAnime(1L, 100L)).thenReturn(review);
+        ReviewBO expectedBO = ReviewBO.builder().id(20L).build();
+        when(mockReviewConverter.review2BO(review)).thenReturn(expectedBO);
 
         // when
         ReviewBO result = sut.getMyReview(1L, 100L);

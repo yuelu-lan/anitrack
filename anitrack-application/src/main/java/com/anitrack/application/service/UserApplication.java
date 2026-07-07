@@ -1,5 +1,6 @@
 package com.anitrack.application.service;
 
+import com.anitrack.application.converter.UserConverter;
 import com.anitrack.application.exception.AnitrackAppException;
 import com.anitrack.application.exception.AppExceptionEnum;
 import com.anitrack.application.model.UserBO;
@@ -18,6 +19,7 @@ public class UserApplication {
 
     private final UserRepo userRepo;
     private final PasswordEncoder passwordEncoder;
+    private final UserConverter userConverter;
 
     @Transactional
     public UserBO register(UserRegisterBO registerBO) {
@@ -27,7 +29,7 @@ public class UserApplication {
         String passwordHash = passwordEncoder.encode(registerBO.getPassword());
         User user = User.register(registerBO.getUsername(), passwordHash, registerBO.getNickname());
         User savedUser = userRepo.save(user);
-        return toBO(savedUser);
+        return userConverter.user2BO(savedUser);
     }
 
     public UserBO login(UserLoginBO loginBO) {
@@ -35,16 +37,6 @@ public class UserApplication {
         if (user == null || !passwordEncoder.matches(loginBO.getPassword(), user.getPasswordHash())) {
             throw new AnitrackAppException(AppExceptionEnum.LOGIN_FAILED);
         }
-        return toBO(user);
-    }
-
-    private UserBO toBO(User user) {
-        return UserBO.builder()
-            .id(user.getId())
-            .username(user.getUsername())
-            .nickname(user.getNickname())
-            .avatarUrl(user.getAvatarUrl())
-            .role(user.getRole())
-            .build();
+        return userConverter.user2BO(user);
     }
 }
