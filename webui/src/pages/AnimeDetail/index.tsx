@@ -89,21 +89,33 @@ export default function AnimeDetailPage() {
   }, [watchlistItem]);
 
   const handleAdd = async () => {
-    await addToWatchlist(animeId);
-    message.success('已加入追番');
-    refetchWatchlist();
+    try {
+      await addToWatchlist(animeId);
+      message.success('已加入追番');
+      refetchWatchlist();
+    } catch {
+      // 业务失败已由全局 errorHandler 提示
+    }
   };
 
   const handleStatusChange = async (status: WatchStatus) => {
-    await changeWatchStatus(animeId, status);
-    message.success('状态已更新');
-    refetchWatchlist();
+    try {
+      await changeWatchStatus(animeId, status);
+      message.success('状态已更新');
+      refetchWatchlist();
+    } catch {
+      // 业务失败已由全局 errorHandler 提示
+    }
   };
 
   const handleProgressSave = async () => {
-    await updateWatchProgress(animeId, progress);
-    message.success('进度已更新');
-    refetchWatchlist();
+    try {
+      await updateWatchProgress(animeId, progress);
+      message.success('进度已更新');
+      refetchWatchlist();
+    } catch {
+      // 业务失败已由全局 errorHandler 提示
+    }
   };
 
   return (

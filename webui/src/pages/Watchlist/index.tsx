@@ -23,15 +23,23 @@ function WatchlistRow({ item, onChanged }: { item: WatchlistItemView; onChanged:
   const [progress, setProgress] = useState(item.currentEpisode);
 
   const handleStatusChange = async (status: WatchStatus) => {
-    await changeWatchStatus(item.animeId, status);
-    message.success('状态已更新');
-    onChanged();
+    try {
+      await changeWatchStatus(item.animeId, status);
+      message.success('状态已更新');
+      onChanged();
+    } catch {
+      // 业务失败已由全局 errorHandler 提示
+    }
   };
 
   const handleProgressSave = async () => {
-    await updateWatchProgress(item.animeId, progress);
-    message.success('进度已更新');
-    onChanged();
+    try {
+      await updateWatchProgress(item.animeId, progress);
+      message.success('进度已更新');
+      onChanged();
+    } catch {
+      // 业务失败已由全局 errorHandler 提示
+    }
   };
 
   return (

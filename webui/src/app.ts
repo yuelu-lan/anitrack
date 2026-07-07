@@ -22,13 +22,6 @@ interface RawApiResponse {
 export const request: RequestConfig = {
   timeout: 10000,
   errorConfig: {
-    errorThrower: (res: RawApiResponse) => {
-      if (res.status === 0) {
-        const error: any = new Error(res.message ?? '请求失败');
-        error.name = 'BizError';
-        throw error;
-      }
-    },
     errorHandler: (error: any, opts: any) => {
       if (opts?.skipErrorHandler) {
         throw error;
@@ -57,6 +50,17 @@ export const request: RequestConfig = {
         config.headers = { ...(config.headers ?? {}), Authorization: `Bearer ${token}` };
       }
       return config;
+    },
+  ],
+  responseInterceptors: [
+    (response: any) => {
+      const body = response.data as RawApiResponse | undefined;
+      if (body && body.status === 0) {
+        const error: any = new Error(body.message ?? '请求失败');
+        error.name = 'BizError';
+        throw error;
+      }
+      return response;
     },
   ],
 };
