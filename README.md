@@ -23,6 +23,7 @@
 | 认证 | Spring Security + JWT（jjwt） |
 | 密码加密 | BCryptPasswordEncoder |
 | Bean 拷贝 | MapStruct |
+| 外部数据源 | Bangumi API（番剧元数据，通过防腐层接入） |
 | 单元测试 | JUnit5 + Mockito + AssertJ |
 
 前端（`webui/`）：
@@ -71,6 +72,8 @@ DB_USERNAME=xxx DB_PASSWORD=xxx JWT_SECRET=xxx mvn -pl anitrack-starter spring-b
 ```
 
 服务默认监听 `8080` 端口，数据库表结构由 Flyway 自动创建。
+
+**网络访问说明**：番剧搜索接口实时调用 [Bangumi API](https://github.com/bangumi/api)（`api.bgm.tv`），该域名在国内通常无法直连，需开启代理（如 Clash 的 TUN/系统代理模式）才能正常访问。
 
 **启动前端**：
 
