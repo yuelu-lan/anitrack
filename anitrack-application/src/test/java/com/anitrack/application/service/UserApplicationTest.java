@@ -2,12 +2,14 @@ package com.anitrack.application.service;
 
 import com.anitrack.application.converter.UserConverter;
 import com.anitrack.application.exception.AnitrackAppException;
+import com.anitrack.application.model.LoginBO;
 import com.anitrack.application.model.UserBO;
 import com.anitrack.application.model.UserLoginBO;
 import com.anitrack.application.model.UserRegisterBO;
 import com.anitrack.domain.user.enums.UserRole;
 import com.anitrack.domain.user.model.User;
 import com.anitrack.domain.user.repo.UserRepo;
+import com.anitrack.domain.user.service.TokenProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -32,11 +34,14 @@ class UserApplicationTest {
     @Mock
     private UserConverter mockUserConverter;
 
+    @Mock
+    private TokenProvider mockTokenProvider;
+
     private UserApplication sut;
 
     @Test
     void register_whenUsernameNotExists_shouldSaveAndReturnUserBO() {
-        sut = new UserApplication(mockUserRepo, mockPasswordEncoder, mockUserConverter);
+        sut = new UserApplication(mockUserRepo, mockPasswordEncoder, mockUserConverter, mockTokenProvider);
         UserRegisterBO registerBO = UserRegisterBO.builder()
             .username("alice")
             .password("raw-password")
@@ -62,7 +67,7 @@ class UserApplicationTest {
 
     @Test
     void register_whenUsernameExists_shouldThrowException() {
-        sut = new UserApplication(mockUserRepo, mockPasswordEncoder, mockUserConverter);
+        sut = new UserApplication(mockUserRepo, mockPasswordEncoder, mockUserConverter, mockTokenProvider);
         UserRegisterBO registerBO = UserRegisterBO.builder()
             .username("alice")
             .password("raw-password")
@@ -78,23 +83,25 @@ class UserApplicationTest {
     }
 
     @Test
-    void login_whenCredentialsAreValid_shouldReturnUserBO() {
-        sut = new UserApplication(mockUserRepo, mockPasswordEncoder, mockUserConverter);
+    void login_whenCredentialsAreValid_shouldReturnLoginBO() {
+        sut = new UserApplication(mockUserRepo, mockPasswordEncoder, mockUserConverter, mockTokenProvider);
         UserLoginBO loginBO = UserLoginBO.builder().username("alice").password("raw-password").build();
         User existingUser = User.reconstitute(1L, "alice", "hashed-password", "Alice", null, UserRole.USER);
         when(mockUserRepo.getByUsername("alice")).thenReturn(existingUser);
         when(mockPasswordEncoder.matches("raw-password", "hashed-password")).thenReturn(true);
-        UserBO expectedBO = UserBO.builder().id(1L).username("alice").build();
-        when(mockUserConverter.user2BO(existingUser)).thenReturn(expectedBO);
+        UserBO expectedUserBO = UserBO.builder().id(1L).username("alice").build();
+        when(mockUserConverter.user2BO(existingUser)).thenReturn(expectedUserBO);
+        when(mockTokenProvider.generateToken(1L)).thenReturn("mock-token");
 
-        UserBO result = sut.login(loginBO);
+        LoginBO result = sut.login(loginBO);
 
-        assertThat(result).isEqualTo(expectedBO);
+        assertThat(result.getUser()).isEqualTo(expectedUserBO);
+        assertThat(result.getToken()).isEqualTo("mock-token");
     }
 
     @Test
     void login_whenUserNotFound_shouldThrowException() {
-        sut = new UserApplication(mockUserRepo, mockPasswordEncoder, mockUserConverter);
+        sut = new UserApplication(mockUserRepo, mockPasswordEncoder, mockUserConverter, mockTokenProvider);
         UserLoginBO loginBO = UserLoginBO.builder().username("unknown").password("raw-password").build();
         when(mockUserRepo.getByUsername("unknown")).thenReturn(null);
 
@@ -105,7 +112,7 @@ class UserApplicationTest {
 
     @Test
     void login_whenPasswordIncorrect_shouldThrowException() {
-        sut = new UserApplication(mockUserRepo, mockPasswordEncoder, mockUserConverter);
+        sut = new UserApplication(mockUserRepo, mockPasswordEncoder, mockUserConverter, mockTokenProvider);
         UserLoginBO loginBO = UserLoginBO.builder().username("alice").password("wrong-password").build();
         User existingUser = User.reconstitute(1L, "alice", "hashed-password", null, null, UserRole.USER);
         when(mockUserRepo.getByUsername("alice")).thenReturn(existingUser);

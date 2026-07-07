@@ -3,11 +3,13 @@ package com.anitrack.application.service;
 import com.anitrack.application.converter.UserConverter;
 import com.anitrack.application.exception.AnitrackAppException;
 import com.anitrack.application.exception.AppExceptionEnum;
+import com.anitrack.application.model.LoginBO;
 import com.anitrack.application.model.UserBO;
 import com.anitrack.application.model.UserLoginBO;
 import com.anitrack.application.model.UserRegisterBO;
 import com.anitrack.domain.user.model.User;
 import com.anitrack.domain.user.repo.UserRepo;
+import com.anitrack.domain.user.service.TokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,7 @@ public class UserApplication {
     private final UserRepo userRepo;
     private final PasswordEncoder passwordEncoder;
     private final UserConverter userConverter;
+    private final TokenProvider tokenProvider;
 
     @Transactional
     public UserBO register(UserRegisterBO registerBO) {
@@ -32,11 +35,13 @@ public class UserApplication {
         return userConverter.user2BO(savedUser);
     }
 
-    public UserBO login(UserLoginBO loginBO) {
+    public LoginBO login(UserLoginBO loginBO) {
         User user = userRepo.getByUsername(loginBO.getUsername());
         if (user == null || !passwordEncoder.matches(loginBO.getPassword(), user.getPasswordHash())) {
             throw new AnitrackAppException(AppExceptionEnum.LOGIN_FAILED);
         }
-        return userConverter.user2BO(user);
+        UserBO userBO = userConverter.user2BO(user);
+        String token = tokenProvider.generateToken(user.getId());
+        return LoginBO.builder().user(userBO).token(token).build();
     }
 }

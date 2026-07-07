@@ -1,6 +1,7 @@
 package com.anitrack.starter.converter;
 
 import com.anitrack.application.model.AnimeBO;
+import com.anitrack.application.model.LoginBO;
 import com.anitrack.application.model.ReviewBO;
 import com.anitrack.application.model.ReviewPageBO;
 import com.anitrack.application.model.ReviewWithAnimeViewBO;
@@ -30,7 +31,7 @@ import java.util.List;
 @Component
 public class HttpConverter {
 
-    public UserRegisterBO req2BO(UserRegisterReq req) {
+    public UserRegisterBO userRegisterReq2BO(UserRegisterReq req) {
         return UserRegisterBO.builder()
             .username(req.getUsername())
             .password(req.getPassword())
@@ -38,7 +39,7 @@ public class HttpConverter {
             .build();
     }
 
-    public UserLoginBO req2BO(UserLoginReq req) {
+    public UserLoginBO userLoginReq2BO(UserLoginReq req) {
         return UserLoginBO.builder()
             .username(req.getUsername())
             .password(req.getPassword())
@@ -54,10 +55,10 @@ public class HttpConverter {
             .build();
     }
 
-    public LoginResponse toLoginResponse(String token, UserBO bo) {
+    public LoginResponse toLoginResponse(LoginBO bo) {
         return LoginResponse.builder()
-            .token(token)
-            .userInfo(bo2Response(bo))
+            .token(bo.getToken())
+            .userInfo(bo2Response(bo.getUser()))
             .build();
     }
 

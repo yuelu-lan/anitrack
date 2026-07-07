@@ -2,6 +2,7 @@ package com.anitrack.starter.controller;
 
 import com.anitrack.application.exception.AnitrackAppException;
 import com.anitrack.application.exception.AppExceptionEnum;
+import com.anitrack.application.model.LoginBO;
 import com.anitrack.application.model.UserBO;
 import com.anitrack.application.service.UserApplication;
 import com.anitrack.domain.user.enums.UserRole;
@@ -71,7 +72,7 @@ class UserControllerTest {
         // given
         Map<String, Object> request = Map.of("username", "alice", "password", "raw-password", "nickname", "Alice");
         UserBO userBO = UserBO.builder().id(1L).username("alice").nickname("Alice").role(UserRole.USER).build();
-        when(mockHttpConverter.req2BO(any(com.anitrack.starter.request.UserRegisterReq.class))).thenCallRealMethod();
+        when(mockHttpConverter.userRegisterReq2BO(any(com.anitrack.starter.request.UserRegisterReq.class))).thenCallRealMethod();
         when(mockUserApplication.register(any())).thenReturn(userBO);
 
         // when & then
@@ -88,7 +89,7 @@ class UserControllerTest {
     void postRegister_whenUsernameAlreadyExists_shouldReturnBusinessError() throws Exception {
         // given
         Map<String, Object> request = Map.of("username", "alice", "password", "raw-password", "nickname", "Alice");
-        when(mockHttpConverter.req2BO(any(com.anitrack.starter.request.UserRegisterReq.class))).thenCallRealMethod();
+        when(mockHttpConverter.userRegisterReq2BO(any(com.anitrack.starter.request.UserRegisterReq.class))).thenCallRealMethod();
         doThrow(new AnitrackAppException(AppExceptionEnum.USERNAME_ALREADY_EXISTS))
             .when(mockUserApplication).register(any());
 
@@ -105,11 +106,11 @@ class UserControllerTest {
         // given
         Map<String, Object> request = Map.of("username", "alice", "password", "raw-password");
         UserBO userBO = UserBO.builder().id(1L).username("alice").nickname("Alice").role(UserRole.USER).build();
-        when(mockHttpConverter.req2BO(any(com.anitrack.starter.request.UserLoginReq.class))).thenCallRealMethod();
-        when(mockUserApplication.login(any())).thenReturn(userBO);
-        when(mockJwtTokenProvider.generateToken(1L)).thenReturn("mock-token");
+        LoginBO loginBO = LoginBO.builder().user(userBO).token("mock-token").build();
+        when(mockHttpConverter.userLoginReq2BO(any(com.anitrack.starter.request.UserLoginReq.class))).thenCallRealMethod();
+        when(mockUserApplication.login(any())).thenReturn(loginBO);
         when(mockHttpConverter.bo2Response(userBO)).thenCallRealMethod();
-        when(mockHttpConverter.toLoginResponse(eq("mock-token"), eq(userBO))).thenCallRealMethod();
+        when(mockHttpConverter.toLoginResponse(loginBO)).thenCallRealMethod();
 
         // when & then
         mockMvc.perform(post("/api/user/login")
@@ -127,7 +128,7 @@ class UserControllerTest {
     void postLogin_whenCredentialsInvalid_shouldReturnBusinessError() throws Exception {
         // given
         Map<String, Object> request = Map.of("username", "alice", "password", "wrong-password");
-        when(mockHttpConverter.req2BO(any(com.anitrack.starter.request.UserLoginReq.class))).thenCallRealMethod();
+        when(mockHttpConverter.userLoginReq2BO(any(com.anitrack.starter.request.UserLoginReq.class))).thenCallRealMethod();
         doThrow(new AnitrackAppException(AppExceptionEnum.LOGIN_FAILED))
             .when(mockUserApplication).login(any());
 
@@ -138,6 +139,6 @@ class UserControllerTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value(0));
 
-        verify(mockJwtTokenProvider, never()).generateToken(any());
+        verify(mockUserApplication, times(1)).login(any());
     }
 }
