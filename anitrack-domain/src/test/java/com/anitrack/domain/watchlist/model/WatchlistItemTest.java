@@ -93,13 +93,43 @@ class WatchlistItemTest {
     }
 
     @Test
-    void changeStatus_whenWantToWatchToWatched_shouldThrowException() {
+    void changeStatus_whenWantToWatchToWatched_shouldSucceed() {
         // given
         WatchlistItem item = WatchlistItem.create(1L, 100L);
 
-        // when & then
-        assertThatThrownBy(() -> item.changeStatus(WatchStatus.WATCHED))
-            .isInstanceOf(IllegalWatchStatusTransitionException.class);
+        // when
+        item.changeStatus(WatchStatus.WATCHED);
+
+        // then
+        assertThat(item.getStatus()).isEqualTo(WatchStatus.WATCHED);
+    }
+
+    @Test
+    void changeStatus_whenWantToWatchToDropped_shouldSucceed() {
+        // given
+        WatchlistItem item = WatchlistItem.create(1L, 100L);
+
+        // when
+        item.changeStatus(WatchStatus.DROPPED);
+
+        // then
+        assertThat(item.getStatus()).isEqualTo(WatchStatus.DROPPED);
+    }
+
+    @Test
+    void changeStatus_whenDroppedToWantToWatch_shouldSucceedAndKeepProgress() {
+        // given
+        WatchlistItem item = WatchlistItem.create(1L, 100L);
+        item.changeStatus(WatchStatus.WATCHING);
+        item.updateProgress(5, 12);
+        item.changeStatus(WatchStatus.DROPPED);
+
+        // when
+        item.changeStatus(WatchStatus.WANT_TO_WATCH);
+
+        // then
+        assertThat(item.getStatus()).isEqualTo(WatchStatus.WANT_TO_WATCH);
+        assertThat(item.getCurrentEpisode()).isEqualTo(5);
     }
 
     @Test
