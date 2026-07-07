@@ -208,6 +208,7 @@ class WatchlistControllerTest {
             .id(10L).animeId(100L).status(WatchStatus.WATCHING).currentEpisode(5).build();
         when(mockWatchlistApplication.updateProgress(1L, 100L, 5)).thenReturn(bo);
         when(mockHttpConverter.watchlistItemBO2Response(bo)).thenCallRealMethod();
+        when(mockHttpConverter.watchStatus2VO(any(WatchStatus.class))).thenCallRealMethod();
 
         // when & then
         mockMvc.perform(post("/api/watchlist/update_progress")
@@ -266,6 +267,7 @@ class WatchlistControllerTest {
         WatchlistItemBO bo = createTestItemBO();
         when(mockWatchlistApplication.getWatchlistItem(1L, 100L)).thenReturn(bo);
         when(mockHttpConverter.watchlistItemBO2Response(bo)).thenCallRealMethod();
+        when(mockHttpConverter.watchStatus2VO(any(WatchStatus.class))).thenCallRealMethod();
 
         // when & then
         mockMvc.perform(post("/api/watchlist/detail")
@@ -315,6 +317,7 @@ class WatchlistControllerTest {
         when(mockWatchlistApplication.listMyWatchlist(1L, WatchStatus.WATCHING)).thenReturn(List.of(viewBO));
         when(mockHttpConverter.watchlistItemViewBOList2Response(List.of(viewBO))).thenCallRealMethod();
         when(mockHttpConverter.watchlistItemViewBO2Response(viewBO)).thenCallRealMethod();
+        when(mockHttpConverter.watchStatus2VO(any(WatchStatus.class))).thenCallRealMethod();
 
         // when & then
         mockMvc.perform(post("/api/watchlist/list")
