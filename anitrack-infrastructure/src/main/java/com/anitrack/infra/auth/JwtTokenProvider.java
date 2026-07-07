@@ -1,5 +1,6 @@
 package com.anitrack.infra.auth;
 
+import com.anitrack.domain.user.service.TokenProvider;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -11,7 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 @Component
-public class JwtTokenProvider {
+public class JwtTokenProvider implements TokenProvider {
 
     private final SecretKey key;
     private final long expirationMillis;
@@ -23,6 +24,7 @@ public class JwtTokenProvider {
         this.expirationMillis = expirationMillis;
     }
 
+    @Override
     public String generateToken(Long userId) {
         Date now = new Date();
         Date expiration = new Date(now.getTime() + expirationMillis);

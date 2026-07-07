@@ -110,9 +110,9 @@ DROPPED       → WATCHING / WANT_TO_WATCH
 
 现状 `WatchlistApplication.changeStatus` 直接操作 `watchlistRepo`，与 `addToWatchlist`/`updateProgress` 走 `WatchlistDomainService` 的风格不一致。本次因 `changeStatus` 需要取 `totalEpisodes`，改为统一走 DomainService：
 
-- `WatchlistDomainService` 新增 `changeStatus(Long userId, Long animeId, WatchStatus newStatus)` 方法：取 item、取 anime、目标为 `WATCHING`/`WATCHED` 时校验 `totalEpisodes` 有效、调聚合根 `changeStatus(newStatus, anime.getTotalEpisodes())`、`watchlistRepo.update(item)`、返回 `WatchlistItem`
-- `WatchlistApplication.changeStatus` 改为委托 DomainService，捕获 `IllegalWatchStatusTransitionException` 翻译为 `ILLEGAL_WATCH_STATUS_TRANSITION`，捕获 `AnimeTotalEpisodesInvalidException` 翻译为 `ANIME_TOTAL_EPISODES_INVALID`，捕获 `WatchlistItemNotFoundException`/`AnimeNotFoundException` 翻译为对应枚举，发布 `WatchStatusChangedEvent`
-- 应用层不再直接依赖 `watchlistRepo` 执行 `changeStatus`（`updateProgress`/`getWatchlistItem`/`listMyWatchlist` 等其他方法的 repo 依赖暂不动，保持最小改动）
+- `WatchlistDomainService` 新增 `changeStatus(Long userId, Long animeId, WatchStatus newStatus)` 方法：取 item、取 anime、目标为 `WATCHING`/`WATCHED` 时校验 `totalEpisodes` 有效、调聚合根 `changeStatus(newStatus, anime.getTotalEpisodes())`、`watchlistRepo.update(item)`、返回 `WatchStatusChangedEvent`
+- `WatchlistApplication.changeStatus` 改为委托 DomainService，捕获 `IllegalWatchStatusTransitionException` 翻译为 `ILLEGAL_WATCH_STATUS_TRANSITION`，捕获 `AnimeTotalEpisodesInvalidException` 翻译为 `ANIME_TOTAL_EPISODES_INVALID`，捕获 `WatchlistItemNotFoundException`/`AnimeNotFoundException` 翻译为对应枚举，发布 `WatchStatusChangedEvent` 后重新 `watchlistRepo.getByUserAndAnime` 取 item 转 BO（多一次查询换取职责清晰：event 携带真实 oldStatus）
+- 应用层不再直接通过 `watchlistRepo` 执行状态转移逻辑（状态转移由 DomainService 完成）；事件发布后的 re-fetch 仅为取 item 转 BO，不承担状态转移职责（`updateProgress`/`getWatchlistItem`/`listMyWatchlist` 等其他方法的 repo 依赖暂不动，保持最小改动）
 
 ### DomainServiceConfig 调整
 

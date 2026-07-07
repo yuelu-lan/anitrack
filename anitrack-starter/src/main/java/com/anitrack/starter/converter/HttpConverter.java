@@ -1,6 +1,7 @@
 package com.anitrack.starter.converter;
 
 import com.anitrack.application.model.AnimeBO;
+import com.anitrack.application.model.LoginBO;
 import com.anitrack.application.model.ReviewBO;
 import com.anitrack.application.model.ReviewPageBO;
 import com.anitrack.application.model.ReviewWithAnimeViewBO;
@@ -10,6 +11,7 @@ import com.anitrack.application.model.UserLoginBO;
 import com.anitrack.application.model.UserRegisterBO;
 import com.anitrack.application.model.WatchlistItemBO;
 import com.anitrack.application.model.WatchlistItemViewBO;
+import com.anitrack.domain.watchlist.enums.WatchStatus;
 import com.anitrack.starter.request.UserLoginReq;
 import com.anitrack.starter.request.UserRegisterReq;
 import com.anitrack.starter.response.AnimeResponse;
@@ -21,6 +23,7 @@ import com.anitrack.starter.response.ReviewWithUserResponse;
 import com.anitrack.starter.response.UserInfoResponse;
 import com.anitrack.starter.response.WatchlistItemResponse;
 import com.anitrack.starter.response.WatchlistItemViewResponse;
+import com.anitrack.starter.response.vo.EnumVO;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -28,7 +31,7 @@ import java.util.List;
 @Component
 public class HttpConverter {
 
-    public UserRegisterBO req2BO(UserRegisterReq req) {
+    public UserRegisterBO userRegisterReq2BO(UserRegisterReq req) {
         return UserRegisterBO.builder()
             .username(req.getUsername())
             .password(req.getPassword())
@@ -36,7 +39,7 @@ public class HttpConverter {
             .build();
     }
 
-    public UserLoginBO req2BO(UserLoginReq req) {
+    public UserLoginBO userLoginReq2BO(UserLoginReq req) {
         return UserLoginBO.builder()
             .username(req.getUsername())
             .password(req.getPassword())
@@ -52,10 +55,10 @@ public class HttpConverter {
             .build();
     }
 
-    public LoginResponse toLoginResponse(String token, UserBO bo) {
+    public LoginResponse toLoginResponse(LoginBO bo) {
         return LoginResponse.builder()
-            .token(token)
-            .userInfo(bo2Response(bo))
+            .token(bo.getToken())
+            .userInfo(bo2Response(bo.getUser()))
             .build();
     }
 
@@ -80,7 +83,7 @@ public class HttpConverter {
         return WatchlistItemResponse.builder()
             .id(bo.getId())
             .animeId(bo.getAnimeId())
-            .status(bo.getStatus())
+            .status(watchStatus2VO(bo.getStatus()))
             .currentEpisode(bo.getCurrentEpisode())
             .updateTime(bo.getUpdateTime())
             .build();
@@ -93,7 +96,7 @@ public class HttpConverter {
             .animeTitleCn(bo.getAnimeTitleCn())
             .animeTitleOriginal(bo.getAnimeTitleOriginal())
             .animeCoverUrl(bo.getAnimeCoverUrl())
-            .status(bo.getStatus())
+            .status(watchStatus2VO(bo.getStatus()))
             .currentEpisode(bo.getCurrentEpisode())
             .updateTime(bo.getUpdateTime())
             .build();
@@ -151,6 +154,16 @@ public class HttpConverter {
             .pageSize(pageBO.getPageSize())
             .total(pageBO.getTotal())
             .list(list)
+            .build();
+    }
+
+    public EnumVO watchStatus2VO(WatchStatus status) {
+        if (status == null) {
+            return null;
+        }
+        return EnumVO.builder()
+            .code(status.getCode())
+            .name(status.name())
             .build();
     }
 }

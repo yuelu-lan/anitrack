@@ -3,7 +3,7 @@
 ## 1. 领域模型设计（充血模型）
 
 - 聚合根、实体类使用充血模型：业务规则、状态转移逻辑写在领域模型内部的方法中，而非外部的 Service 类里
-- 例如 `WatchlistItem.changeStatus(WatchStatus newStatus)` 内部完成合法性校验并变更状态，而不是由外部代码先查询状态、再调用 setter 强行赋值
+- 例如 `WatchlistItem.changeStatus(WatchStatus newStatus, Integer totalEpisodes)` 内部完成合法性校验并变更状态（转 `WATCHED` 时置满进度并对 `totalEpisodes` 自我保护），而不是由外部代码先查询状态、再调用 setter 强行赋值
 - 聚合根内部字段通过构造方法或工厂方法保证初始状态合法，不暴露无校验的 setter
 
 ```java
@@ -15,15 +15,21 @@ public class WatchlistItem {
     private Integer currentEpisode;
 
     private static final Map<WatchStatus, Set<WatchStatus>> TRANSITIONS = Map.of(
-        WatchStatus.WANT_TO_WATCH, Set.of(WatchStatus.WATCHING),
+        WatchStatus.WANT_TO_WATCH, Set.of(WatchStatus.WATCHING, WatchStatus.WATCHED, WatchStatus.DROPPED),
         WatchStatus.WATCHING, Set.of(WatchStatus.WATCHED, WatchStatus.DROPPED),
         WatchStatus.WATCHED, Set.of(),
-        WatchStatus.DROPPED, Set.of(WatchStatus.WATCHING)
+        WatchStatus.DROPPED, Set.of(WatchStatus.WATCHING, WatchStatus.WANT_TO_WATCH)
     );
 
-    public WatchStatusChangedEvent changeStatus(WatchStatus newStatus) {
+    public WatchStatusChangedEvent changeStatus(WatchStatus newStatus, Integer totalEpisodes) {
         if (!TRANSITIONS.getOrDefault(this.status, Set.of()).contains(newStatus)) {
             throw new IllegalWatchStatusTransitionException(this.status, newStatus);
+        }
+        if (newStatus == WatchStatus.WATCHED) {
+            if (totalEpisodes == null || totalEpisodes <= 0) {
+                throw new AnimeTotalEpisodesInvalidException(this.animeId);
+            }
+            this.currentEpisode = totalEpisodes;
         }
         WatchStatus oldStatus = this.status;
         this.status = newStatus;

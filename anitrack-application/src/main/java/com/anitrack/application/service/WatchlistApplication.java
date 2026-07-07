@@ -1,6 +1,7 @@
 package com.anitrack.application.service;
 
 import com.anitrack.application.assembler.WatchlistAssembler;
+import com.anitrack.application.converter.WatchlistBOConverter;
 import com.anitrack.application.exception.AnitrackAppException;
 import com.anitrack.application.exception.AppExceptionEnum;
 import com.anitrack.application.model.WatchlistItemBO;
@@ -33,6 +34,7 @@ public class WatchlistApplication {
     private final WatchlistRepo watchlistRepo;
     private final AnimeRepo animeRepo;
     private final WatchlistAssembler watchlistAssembler;
+    private final WatchlistBOConverter watchlistBOConverter;
     private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
@@ -45,7 +47,7 @@ public class WatchlistApplication {
         } catch (WatchlistItemAlreadyExistsException e) {
             throw new AnitrackAppException(AppExceptionEnum.WATCHLIST_ITEM_ALREADY_EXISTS);
         }
-        return toBO(item);
+        return watchlistBOConverter.watchlistItem2BO(item);
     }
 
     @Transactional
@@ -67,7 +69,7 @@ public class WatchlistApplication {
         if (item == null) {
             throw new AnitrackAppException(AppExceptionEnum.WATCHLIST_ITEM_NOT_FOUND);
         }
-        return toBO(item);
+        return watchlistBOConverter.watchlistItem2BO(item);
     }
 
     @Transactional
@@ -82,7 +84,7 @@ public class WatchlistApplication {
         } catch (IllegalWatchProgressException e) {
             throw new AnitrackAppException(AppExceptionEnum.ILLEGAL_WATCH_PROGRESS);
         }
-        return toBO(item);
+        return watchlistBOConverter.watchlistItem2BO(item);
     }
 
     public WatchlistItemBO getWatchlistItem(Long userId, Long animeId) {
@@ -90,7 +92,7 @@ public class WatchlistApplication {
         if (item == null) {
             throw new AnitrackAppException(AppExceptionEnum.WATCHLIST_ITEM_NOT_FOUND);
         }
-        return toBO(item);
+        return watchlistBOConverter.watchlistItem2BO(item);
     }
 
     public List<WatchlistItemViewBO> listMyWatchlist(Long userId, WatchStatus status) {
@@ -98,15 +100,5 @@ public class WatchlistApplication {
         List<Long> animeIds = items.stream().map(WatchlistItem::getAnimeId).toList();
         List<Anime> animes = animeRepo.listByIds(animeIds);
         return watchlistAssembler.assemble(items, animes);
-    }
-
-    private WatchlistItemBO toBO(WatchlistItem item) {
-        return WatchlistItemBO.builder()
-            .id(item.getId())
-            .animeId(item.getAnimeId())
-            .status(item.getStatus())
-            .currentEpisode(item.getCurrentEpisode())
-            .updateTime(item.getUpdateTime())
-            .build();
     }
 }
