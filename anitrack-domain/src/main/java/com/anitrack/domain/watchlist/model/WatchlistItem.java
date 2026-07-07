@@ -18,10 +18,10 @@ import java.util.Set;
 public class WatchlistItem {
 
     private static final Map<WatchStatus, Set<WatchStatus>> TRANSITIONS = Map.of(
-        WatchStatus.WANT_TO_WATCH, Set.of(WatchStatus.WATCHING),
+        WatchStatus.WANT_TO_WATCH, Set.of(WatchStatus.WATCHING, WatchStatus.WATCHED, WatchStatus.DROPPED),
         WatchStatus.WATCHING, Set.of(WatchStatus.WATCHED, WatchStatus.DROPPED),
         WatchStatus.WATCHED, Set.of(),
-        WatchStatus.DROPPED, Set.of(WatchStatus.WATCHING)
+        WatchStatus.DROPPED, Set.of(WatchStatus.WATCHING, WatchStatus.WANT_TO_WATCH)
     );
 
     private Long id;
