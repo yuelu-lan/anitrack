@@ -155,9 +155,10 @@ enum WatchStatus { WANT_TO_WATCH, WATCHING, WATCHED, DROPPED }
 ```
 
 - 一个用户对同一番剧只能有一条 `WatchlistItem`（`userId + animeId` 唯一）；评分统一由 Review 承载，不在 `WatchlistItem` 中冗余存储
-- 合法状态转移表（`Map<WatchStatus, Set<WatchStatus>>`）内置在聚合根内：`WANT_TO_WATCH → WATCHING`、`WATCHING → WATCHED/DROPPED`、`DROPPED → WATCHING`（重新观看保留弃番时的 `currentEpisode` 进度，不清零）；`WATCHED` 为终态，不可回退
-- `changeStatus(newStatus)`：查转移表校验，不合法抛 `IllegalWatchStatusTransitionException`
-- `updateProgress(episode)`：仅 `WATCHING` 状态允许调用，且不能超过对应 `Anime.totalEpisodes`（跨上下文校验，放在 `WatchlistDomainService` 里查询 Anime 上下文的仓储后委托聚合根执行）
+- 合法状态转移表（`Map<WatchStatus, Set<WatchStatus>>`）内置在聚合根内：`WANT_TO_WATCH → WATCHING/WATCHED/DROPPED`、`WATCHING → WATCHED/DROPPED`、`DROPPED → WATCHING/WANT_TO_WATCH`（弃番恢复或重置为想看时保留 `currentEpisode` 不清零、不重置）；`WATCHED` 为终态，不可回退
+- `changeStatus(newStatus, totalEpisodes)`：查转移表校验，不合法抛 `IllegalWatchStatusTransitionException`；转 `WATCHED` 时将 `currentEpisode` 置为 `totalEpisodes`，若 `totalEpisodes` 为 `null` 或 `<= 0` 抛 `AnimeTotalEpisodesInvalidException`（聚合根自我保护，构造参数为 `animeId`）；其余目标状态进度保持不变
+- `updateProgress(episode, totalEpisodes)`：仅 `WATCHING` 状态允许调用，否则抛 `IllegalWatchProgressException`；`episode` 须 `>= 0`（允许 0）；允许倒退；`totalEpisodes` 有效（非 `null` 且 `> 0`）时校验 `episode` 不超过它，为 `null` 或 `<= 0` 视为总集数未知不做上限校验；通过后更新 `currentEpisode` 并刷新 `updateTime`（跨上下文校验，`totalEpisodes` 由 `WatchlistDomainService` 查 Anime 上下文仓储取得后委托聚合根执行）。不再"进度达到最后一集自动转看完"
+- 跨上下文集数校验放在 `WatchlistDomainService`：追番入口（`addToWatchlist`）不再校验 `totalEpisodes`，集数异常的番剧允许进入想看状态；`changeStatus` 目标为 `WATCHING`/`WATCHED` 时校验 `anime.getTotalEpisodes()` 有效，无效抛 `AnimeTotalEpisodesInvalidException`
 - 领域事件：`WatchStatusChangedEvent(userId, animeId, oldStatus, newStatus)`，聚合内只产生事件对象，由 `WatchlistApplication` 在事务提交后通过 Spring `ApplicationEventPublisher` 发布，避免 domain 层直接依赖 Spring 类型
 
 ### Review 上下文（评价，Phase 2）
