@@ -1,7 +1,7 @@
 package com.anitrack.application.service;
 
 import com.anitrack.application.assembler.ReviewAssembler;
-import com.anitrack.application.converter.ReviewConverter;
+import com.anitrack.application.converter.ReviewBOConverter;
 import com.anitrack.application.exception.AnitrackAppException;
 import com.anitrack.application.exception.AppExceptionEnum;
 import com.anitrack.application.model.ReviewBO;
@@ -33,7 +33,7 @@ public class ReviewApplication {
     private final UserRepo userRepo;
     private final AnimeRepo animeRepo;
     private final ReviewAssembler reviewAssembler;
-    private final ReviewConverter reviewConverter;
+    private final ReviewBOConverter reviewBOConverter;
 
     @Transactional
     public ReviewBO addReview(Long userId, Long animeId, Integer score, String content) {
@@ -47,7 +47,7 @@ public class ReviewApplication {
         } catch (IllegalReviewScoreException e) {
             throw new AnitrackAppException(AppExceptionEnum.ILLEGAL_REVIEW_SCORE);
         }
-        return reviewConverter.review2BO(review);
+        return reviewBOConverter.review2BO(review);
     }
 
     @Transactional
@@ -62,7 +62,7 @@ public class ReviewApplication {
             throw new AnitrackAppException(AppExceptionEnum.ILLEGAL_REVIEW_SCORE);
         }
         reviewRepo.update(review);
-        return reviewConverter.review2BO(review);
+        return reviewBOConverter.review2BO(review);
     }
 
     public ReviewBO getMyReview(Long userId, Long animeId) {
@@ -70,7 +70,7 @@ public class ReviewApplication {
         if (review == null) {
             throw new AnitrackAppException(AppExceptionEnum.REVIEW_NOT_FOUND);
         }
-        return reviewConverter.review2BO(review);
+        return reviewBOConverter.review2BO(review);
     }
 
     public ReviewPageBO<ReviewWithUserViewBO> listByAnime(Long animeId, int page, int pageSize) {

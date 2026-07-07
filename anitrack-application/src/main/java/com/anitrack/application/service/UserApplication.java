@@ -1,6 +1,6 @@
 package com.anitrack.application.service;
 
-import com.anitrack.application.converter.UserConverter;
+import com.anitrack.application.converter.UserBOConverter;
 import com.anitrack.application.exception.AnitrackAppException;
 import com.anitrack.application.exception.AppExceptionEnum;
 import com.anitrack.application.model.LoginBO;
@@ -21,7 +21,7 @@ public class UserApplication {
 
     private final UserRepo userRepo;
     private final PasswordEncoder passwordEncoder;
-    private final UserConverter userConverter;
+    private final UserBOConverter userBOConverter;
     private final TokenProvider tokenProvider;
 
     @Transactional
@@ -32,7 +32,7 @@ public class UserApplication {
         String passwordHash = passwordEncoder.encode(registerBO.getPassword());
         User user = User.register(registerBO.getUsername(), passwordHash, registerBO.getNickname());
         User savedUser = userRepo.save(user);
-        return userConverter.user2BO(savedUser);
+        return userBOConverter.user2BO(savedUser);
     }
 
     public LoginBO login(UserLoginBO loginBO) {
@@ -40,7 +40,7 @@ public class UserApplication {
         if (user == null || !passwordEncoder.matches(loginBO.getPassword(), user.getPasswordHash())) {
             throw new AnitrackAppException(AppExceptionEnum.LOGIN_FAILED);
         }
-        UserBO userBO = userConverter.user2BO(user);
+        UserBO userBO = userBOConverter.user2BO(user);
         String token = tokenProvider.generateToken(user.getId());
         return LoginBO.builder().user(userBO).token(token).build();
     }

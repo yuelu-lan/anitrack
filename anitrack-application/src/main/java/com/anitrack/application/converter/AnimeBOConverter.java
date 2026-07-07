@@ -5,7 +5,7 @@ import com.anitrack.domain.anime.model.Anime;
 import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
-public interface AnimeConverter {
+public interface AnimeBOConverter {
 
     AnimeBO anime2BO(Anime anime);
 }

@@ -5,7 +5,7 @@ import com.anitrack.domain.user.model.User;
 import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
-public interface UserConverter {
+public interface UserBOConverter {
 
     UserBO user2BO(User user);
 }

@@ -1,7 +1,7 @@
 package com.anitrack.application.service;
 
 import com.anitrack.application.assembler.WatchlistAssembler;
-import com.anitrack.application.converter.WatchlistConverter;
+import com.anitrack.application.converter.WatchlistBOConverter;
 import com.anitrack.application.exception.AnitrackAppException;
 import com.anitrack.application.model.WatchlistItemBO;
 import com.anitrack.application.model.WatchlistItemViewBO;
@@ -49,7 +49,7 @@ class WatchlistApplicationTest {
     private WatchlistAssembler mockWatchlistAssembler;
 
     @Mock
-    private WatchlistConverter mockWatchlistConverter;
+    private WatchlistBOConverter mockWatchlistBOConverter;
 
     @Mock
     private ApplicationEventPublisher mockEventPublisher;
@@ -63,7 +63,7 @@ class WatchlistApplicationTest {
         WatchlistItem item = WatchlistItem.reconstitute(10L, 1L, 100L, WatchStatus.WANT_TO_WATCH, 0, null);
         when(mockWatchlistDomainService.addToWatchlist(1L, 100L)).thenReturn(item);
         WatchlistItemBO expectedBO = WatchlistItemBO.builder().id(10L).status(WatchStatus.WANT_TO_WATCH).build();
-        when(mockWatchlistConverter.watchlistItem2BO(item)).thenReturn(expectedBO);
+        when(mockWatchlistBOConverter.watchlistItem2BO(item)).thenReturn(expectedBO);
 
         // when
         WatchlistItemBO result = sut.addToWatchlist(1L, 100L);
@@ -105,7 +105,7 @@ class WatchlistApplicationTest {
         when(mockWatchlistDomainService.changeStatus(1L, 100L, WatchStatus.WATCHED)).thenReturn(event);
         when(mockWatchlistRepo.getByUserAndAnime(1L, 100L)).thenReturn(item);
         WatchlistItemBO expectedBO = WatchlistItemBO.builder().status(WatchStatus.WATCHED).build();
-        when(mockWatchlistConverter.watchlistItem2BO(item)).thenReturn(expectedBO);
+        when(mockWatchlistBOConverter.watchlistItem2BO(item)).thenReturn(expectedBO);
 
         // when
         WatchlistItemBO result = sut.changeStatus(1L, 100L, WatchStatus.WATCHED);
@@ -163,7 +163,7 @@ class WatchlistApplicationTest {
         WatchlistItem item = WatchlistItem.reconstitute(10L, 1L, 100L, WatchStatus.WATCHING, 5, null);
         when(mockWatchlistDomainService.updateProgress(1L, 100L, 5)).thenReturn(item);
         WatchlistItemBO expectedBO = WatchlistItemBO.builder().currentEpisode(5).build();
-        when(mockWatchlistConverter.watchlistItem2BO(item)).thenReturn(expectedBO);
+        when(mockWatchlistBOConverter.watchlistItem2BO(item)).thenReturn(expectedBO);
 
         // when
         WatchlistItemBO result = sut.updateProgress(1L, 100L, 5);
@@ -214,7 +214,7 @@ class WatchlistApplicationTest {
         WatchlistItem item = WatchlistItem.reconstitute(10L, 1L, 100L, WatchStatus.WATCHING, 5, null);
         when(mockWatchlistRepo.getByUserAndAnime(1L, 100L)).thenReturn(item);
         WatchlistItemBO expectedBO = WatchlistItemBO.builder().id(10L).build();
-        when(mockWatchlistConverter.watchlistItem2BO(item)).thenReturn(expectedBO);
+        when(mockWatchlistBOConverter.watchlistItem2BO(item)).thenReturn(expectedBO);
 
         // when
         WatchlistItemBO result = sut.getWatchlistItem(1L, 100L);

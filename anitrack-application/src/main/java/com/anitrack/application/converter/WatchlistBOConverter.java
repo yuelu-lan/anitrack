@@ -5,7 +5,7 @@ import com.anitrack.domain.watchlist.model.WatchlistItem;
 import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
-public interface WatchlistConverter {
+public interface WatchlistBOConverter {
 
     WatchlistItemBO watchlistItem2BO(WatchlistItem item);
 }

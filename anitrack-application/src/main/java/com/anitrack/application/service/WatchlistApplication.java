@@ -1,7 +1,7 @@
 package com.anitrack.application.service;
 
 import com.anitrack.application.assembler.WatchlistAssembler;
-import com.anitrack.application.converter.WatchlistConverter;
+import com.anitrack.application.converter.WatchlistBOConverter;
 import com.anitrack.application.exception.AnitrackAppException;
 import com.anitrack.application.exception.AppExceptionEnum;
 import com.anitrack.application.model.WatchlistItemBO;
@@ -34,7 +34,7 @@ public class WatchlistApplication {
     private final WatchlistRepo watchlistRepo;
     private final AnimeRepo animeRepo;
     private final WatchlistAssembler watchlistAssembler;
-    private final WatchlistConverter watchlistConverter;
+    private final WatchlistBOConverter watchlistBOConverter;
     private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
@@ -47,7 +47,7 @@ public class WatchlistApplication {
         } catch (WatchlistItemAlreadyExistsException e) {
             throw new AnitrackAppException(AppExceptionEnum.WATCHLIST_ITEM_ALREADY_EXISTS);
         }
-        return watchlistConverter.watchlistItem2BO(item);
+        return watchlistBOConverter.watchlistItem2BO(item);
     }
 
     @Transactional
@@ -69,7 +69,7 @@ public class WatchlistApplication {
         if (item == null) {
             throw new AnitrackAppException(AppExceptionEnum.WATCHLIST_ITEM_NOT_FOUND);
         }
-        return watchlistConverter.watchlistItem2BO(item);
+        return watchlistBOConverter.watchlistItem2BO(item);
     }
 
     @Transactional
@@ -84,7 +84,7 @@ public class WatchlistApplication {
         } catch (IllegalWatchProgressException e) {
             throw new AnitrackAppException(AppExceptionEnum.ILLEGAL_WATCH_PROGRESS);
         }
-        return watchlistConverter.watchlistItem2BO(item);
+        return watchlistBOConverter.watchlistItem2BO(item);
     }
 
     public WatchlistItemBO getWatchlistItem(Long userId, Long animeId) {
@@ -92,7 +92,7 @@ public class WatchlistApplication {
         if (item == null) {
             throw new AnitrackAppException(AppExceptionEnum.WATCHLIST_ITEM_NOT_FOUND);
         }
-        return watchlistConverter.watchlistItem2BO(item);
+        return watchlistBOConverter.watchlistItem2BO(item);
     }
 
     public List<WatchlistItemViewBO> listMyWatchlist(Long userId, WatchStatus status) {

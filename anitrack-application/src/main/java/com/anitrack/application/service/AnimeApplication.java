@@ -1,6 +1,6 @@
 package com.anitrack.application.service;
 
-import com.anitrack.application.converter.AnimeConverter;
+import com.anitrack.application.converter.AnimeBOConverter;
 import com.anitrack.application.exception.AnitrackAppException;
 import com.anitrack.application.exception.AppExceptionEnum;
 import com.anitrack.application.model.AnimeBO;
@@ -22,7 +22,7 @@ public class AnimeApplication {
 
     private final BangumiGateway bangumiGateway;
     private final AnimeRepo animeRepo;
-    private final AnimeConverter animeConverter;
+    private final AnimeBOConverter animeBOConverter;
 
     @Transactional
     public List<AnimeBO> searchAnime(String keyword) {
@@ -35,7 +35,7 @@ public class AnimeApplication {
         }
         return searchResults.stream()
             .map(animeRepo::upsert)
-            .map(animeConverter::anime2BO)
+            .map(animeBOConverter::anime2BO)
             .toList();
     }
 
@@ -44,6 +44,6 @@ public class AnimeApplication {
         if (anime == null) {
             throw new AnitrackAppException(AppExceptionEnum.ANIME_NOT_FOUND);
         }
-        return animeConverter.anime2BO(anime);
+        return animeBOConverter.anime2BO(anime);
     }
 }

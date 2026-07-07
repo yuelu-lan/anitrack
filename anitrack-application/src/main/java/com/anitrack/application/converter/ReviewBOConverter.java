@@ -5,7 +5,7 @@ import com.anitrack.domain.review.model.Review;
 import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
-public interface ReviewConverter {
+public interface ReviewBOConverter {
 
     ReviewBO review2BO(Review review);
 }

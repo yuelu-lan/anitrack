@@ -1,6 +1,6 @@
 package com.anitrack.application.service;
 
-import com.anitrack.application.converter.AnimeConverter;
+import com.anitrack.application.converter.AnimeBOConverter;
 import com.anitrack.application.exception.AnitrackAppException;
 import com.anitrack.application.model.AnimeBO;
 import com.anitrack.domain.anime.exception.BangumiApiException;
@@ -31,7 +31,7 @@ class AnimeApplicationTest {
     private AnimeRepo mockAnimeRepo;
 
     @Mock
-    private AnimeConverter mockAnimeConverter;
+    private AnimeBOConverter mockAnimeBOConverter;
 
     @InjectMocks
     private AnimeApplication sut;
@@ -45,7 +45,7 @@ class AnimeApplicationTest {
         AnimeBO bo = AnimeBO.builder().id(1L).titleCn("中文名").build();
         when(mockBangumiGateway.search("关键字")).thenReturn(List.of(searchResult));
         when(mockAnimeRepo.upsert(searchResult)).thenReturn(persisted);
-        when(mockAnimeConverter.anime2BO(persisted)).thenReturn(bo);
+        when(mockAnimeBOConverter.anime2BO(persisted)).thenReturn(bo);
 
         List<AnimeBO> result = sut.searchAnime("关键字");
 
@@ -71,7 +71,7 @@ class AnimeApplicationTest {
             LocalDate.of(2024, 1, 1), "简介");
         AnimeBO bo = AnimeBO.builder().id(1L).titleOriginal("Original Title").build();
         when(mockAnimeRepo.getById(1L)).thenReturn(anime);
-        when(mockAnimeConverter.anime2BO(anime)).thenReturn(bo);
+        when(mockAnimeBOConverter.anime2BO(anime)).thenReturn(bo);
 
         AnimeBO result = sut.getAnimeDetail(1L);
 
