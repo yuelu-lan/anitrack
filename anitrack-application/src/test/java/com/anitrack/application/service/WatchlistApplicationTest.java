@@ -5,10 +5,12 @@ import com.anitrack.application.exception.AnitrackAppException;
 import com.anitrack.application.model.WatchlistItemBO;
 import com.anitrack.application.model.WatchlistItemViewBO;
 import com.anitrack.domain.anime.exception.AnimeNotFoundException;
+import com.anitrack.domain.anime.exception.AnimeTotalEpisodesInvalidException;
 import com.anitrack.domain.anime.model.Anime;
 import com.anitrack.domain.anime.repo.AnimeRepo;
 import com.anitrack.domain.watchlist.enums.WatchStatus;
 import com.anitrack.domain.watchlist.exception.IllegalWatchProgressException;
+import com.anitrack.domain.watchlist.exception.IllegalWatchStatusTransitionException;
 import com.anitrack.domain.watchlist.exception.WatchlistItemAlreadyExistsException;
 import com.anitrack.domain.watchlist.exception.WatchlistItemNotFoundException;
 import com.anitrack.domain.watchlist.model.WatchStatusChangedEvent;
@@ -90,46 +92,61 @@ class WatchlistApplicationTest {
     }
 
     @Test
-    void changeStatus_whenItemExists_shouldUpdateAndPublishEvent() {
+    void changeStatus_whenSucceeds_shouldReturnBOAndPublishEvent() {
         // given
-        WatchlistItem item = WatchlistItem.reconstitute(10L, 1L, 100L, WatchStatus.WANT_TO_WATCH, 0, null);
+        WatchStatusChangedEvent event = new WatchStatusChangedEvent(1L, 100L, WatchStatus.WATCHING, WatchStatus.WATCHED);
+        WatchlistItem item = WatchlistItem.reconstitute(10L, 1L, 100L, WatchStatus.WATCHED, 12, null);
+        when(mockWatchlistDomainService.changeStatus(1L, 100L, WatchStatus.WATCHED)).thenReturn(event);
         when(mockWatchlistRepo.getByUserAndAnime(1L, 100L)).thenReturn(item);
 
         // when
-        WatchlistItemBO result = sut.changeStatus(1L, 100L, WatchStatus.WATCHING);
+        WatchlistItemBO result = sut.changeStatus(1L, 100L, WatchStatus.WATCHED);
 
         // then
-        assertThat(result.getStatus()).isEqualTo(WatchStatus.WATCHING);
-        verify(mockWatchlistRepo, times(1)).update(item);
-        verify(mockEventPublisher, times(1)).publishEvent(any(WatchStatusChangedEvent.class));
+        assertThat(result.getStatus()).isEqualTo(WatchStatus.WATCHED);
+        verify(mockEventPublisher, times(1)).publishEvent(event);
     }
 
     @Test
     void changeStatus_whenItemNotFound_shouldThrowAppException() {
         // given
-        when(mockWatchlistRepo.getByUserAndAnime(1L, 100L)).thenReturn(null);
+        when(mockWatchlistDomainService.changeStatus(1L, 100L, WatchStatus.WATCHING))
+            .thenThrow(new WatchlistItemNotFoundException(1L, 100L));
 
         // when & then
         assertThatThrownBy(() -> sut.changeStatus(1L, 100L, WatchStatus.WATCHING))
             .isInstanceOf(AnitrackAppException.class)
             .hasMessageContaining("追番记录不存在");
 
-        verify(mockEventPublisher, never()).publishEvent(any(WatchStatusChangedEvent.class));
+        verify(mockEventPublisher, never()).publishEvent(any());
     }
 
     @Test
     void changeStatus_whenTransitionIllegal_shouldThrowAppException() {
         // given
-        WatchlistItem item = WatchlistItem.reconstitute(10L, 1L, 100L, WatchStatus.WANT_TO_WATCH, 0, null);
-        when(mockWatchlistRepo.getByUserAndAnime(1L, 100L)).thenReturn(item);
+        when(mockWatchlistDomainService.changeStatus(1L, 100L, WatchStatus.WATCHING))
+            .thenThrow(new IllegalWatchStatusTransitionException(WatchStatus.WATCHED, WatchStatus.WATCHING));
 
         // when & then
-        assertThatThrownBy(() -> sut.changeStatus(1L, 100L, WatchStatus.WATCHED))
+        assertThatThrownBy(() -> sut.changeStatus(1L, 100L, WatchStatus.WATCHING))
             .isInstanceOf(AnitrackAppException.class)
             .hasMessageContaining("非法的追番状态转移");
 
-        verify(mockWatchlistRepo, never()).update(any());
-        verify(mockEventPublisher, never()).publishEvent(any(WatchStatusChangedEvent.class));
+        verify(mockEventPublisher, never()).publishEvent(any());
+    }
+
+    @Test
+    void changeStatus_whenTotalEpisodesInvalid_shouldThrowAppException() {
+        // given
+        when(mockWatchlistDomainService.changeStatus(1L, 100L, WatchStatus.WATCHING))
+            .thenThrow(new AnimeTotalEpisodesInvalidException(100L));
+
+        // when & then
+        assertThatThrownBy(() -> sut.changeStatus(1L, 100L, WatchStatus.WATCHING))
+            .isInstanceOf(AnitrackAppException.class)
+            .hasMessageContaining("番剧总集数无效");
+
+        verify(mockEventPublisher, never()).publishEvent(any());
     }
 
     @Test
