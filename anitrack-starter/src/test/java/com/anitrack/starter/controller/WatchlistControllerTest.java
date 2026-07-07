@@ -163,13 +163,13 @@ class WatchlistControllerTest {
         stubValidToken();
         doThrow(new com.anitrack.application.exception.AnitrackAppException(
                 com.anitrack.application.exception.AppExceptionEnum.ILLEGAL_WATCH_STATUS_TRANSITION))
-            .when(mockWatchlistApplication).changeStatus(1L, 100L, WatchStatus.WATCHED);
+            .when(mockWatchlistApplication).changeStatus(1L, 100L, WatchStatus.WATCHING);
 
         // when & then
         mockMvc.perform(post("/api/watchlist/change_status")
                 .header("Authorization", AUTH_HEADER_VALUE)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(Map.of("animeId", 100L, "status", "WATCHED"))))
+                .content(objectMapper.writeValueAsString(Map.of("animeId", 100L, "status", "WATCHING"))))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value(0));
     }
