@@ -1,6 +1,6 @@
 package com.anitrack.starter.response;
 
-import com.anitrack.domain.watchlist.enums.WatchStatus;
+import com.anitrack.starter.response.vo.EnumVO;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -15,7 +15,7 @@ public class WatchlistItemViewResponse {
     private String animeTitleCn;
     private String animeTitleOriginal;
     private String animeCoverUrl;
-    private WatchStatus status;
+    private EnumVO status;
     private Integer currentEpisode;
     private LocalDateTime updateTime;
 }

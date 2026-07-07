@@ -17,6 +17,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 import java.util.Map;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -85,6 +86,7 @@ class WatchlistControllerTest {
         WatchlistItemBO bo = createTestItemBO();
         when(mockWatchlistApplication.addToWatchlist(1L, 100L)).thenReturn(bo);
         when(mockHttpConverter.watchlistItemBO2Response(bo)).thenCallRealMethod();
+        when(mockHttpConverter.watchStatus2VO(any(WatchStatus.class))).thenCallRealMethod();
 
         // when & then
         mockMvc.perform(post("/api/watchlist/add")
@@ -93,7 +95,8 @@ class WatchlistControllerTest {
                 .content(objectMapper.writeValueAsString(Map.of("animeId", 100L))))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value(1))
-            .andExpect(jsonPath("$.data.status").value("WANT_TO_WATCH"));
+            .andExpect(jsonPath("$.data.status.name").value("WANT_TO_WATCH"))
+            .andExpect(jsonPath("$.data.status.code").value(1));
 
         verify(mockWatchlistApplication, times(1)).addToWatchlist(1L, 100L);
     }
@@ -144,6 +147,7 @@ class WatchlistControllerTest {
             .id(10L).animeId(100L).status(WatchStatus.WATCHING).currentEpisode(0).build();
         when(mockWatchlistApplication.changeStatus(1L, 100L, WatchStatus.WATCHING)).thenReturn(bo);
         when(mockHttpConverter.watchlistItemBO2Response(bo)).thenCallRealMethod();
+        when(mockHttpConverter.watchStatus2VO(any(WatchStatus.class))).thenCallRealMethod();
 
         // when & then
         mockMvc.perform(post("/api/watchlist/change_status")
@@ -152,7 +156,8 @@ class WatchlistControllerTest {
                 .content(objectMapper.writeValueAsString(Map.of("animeId", 100L, "status", "WATCHING"))))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value(1))
-            .andExpect(jsonPath("$.data.status").value("WATCHING"));
+            .andExpect(jsonPath("$.data.status.name").value("WATCHING"))
+            .andExpect(jsonPath("$.data.status.code").value(2));
 
         verify(mockWatchlistApplication, times(1)).changeStatus(1L, 100L, WatchStatus.WATCHING);
     }

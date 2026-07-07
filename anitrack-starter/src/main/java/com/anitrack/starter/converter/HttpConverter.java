@@ -10,6 +10,7 @@ import com.anitrack.application.model.UserLoginBO;
 import com.anitrack.application.model.UserRegisterBO;
 import com.anitrack.application.model.WatchlistItemBO;
 import com.anitrack.application.model.WatchlistItemViewBO;
+import com.anitrack.domain.watchlist.enums.WatchStatus;
 import com.anitrack.starter.request.UserLoginReq;
 import com.anitrack.starter.request.UserRegisterReq;
 import com.anitrack.starter.response.AnimeResponse;
@@ -21,6 +22,7 @@ import com.anitrack.starter.response.ReviewWithUserResponse;
 import com.anitrack.starter.response.UserInfoResponse;
 import com.anitrack.starter.response.WatchlistItemResponse;
 import com.anitrack.starter.response.WatchlistItemViewResponse;
+import com.anitrack.starter.response.vo.EnumVO;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -80,7 +82,7 @@ public class HttpConverter {
         return WatchlistItemResponse.builder()
             .id(bo.getId())
             .animeId(bo.getAnimeId())
-            .status(bo.getStatus())
+            .status(watchStatus2VO(bo.getStatus()))
             .currentEpisode(bo.getCurrentEpisode())
             .updateTime(bo.getUpdateTime())
             .build();
@@ -93,7 +95,7 @@ public class HttpConverter {
             .animeTitleCn(bo.getAnimeTitleCn())
             .animeTitleOriginal(bo.getAnimeTitleOriginal())
             .animeCoverUrl(bo.getAnimeCoverUrl())
-            .status(bo.getStatus())
+            .status(watchStatus2VO(bo.getStatus()))
             .currentEpisode(bo.getCurrentEpisode())
             .updateTime(bo.getUpdateTime())
             .build();
@@ -151,6 +153,16 @@ public class HttpConverter {
             .pageSize(pageBO.getPageSize())
             .total(pageBO.getTotal())
             .list(list)
+            .build();
+    }
+
+    public EnumVO watchStatus2VO(WatchStatus status) {
+        if (status == null) {
+            return null;
+        }
+        return EnumVO.builder()
+            .code(status.getCode())
+            .name(status.name())
             .build();
     }
 }
