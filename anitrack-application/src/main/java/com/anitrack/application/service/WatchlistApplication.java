@@ -6,6 +6,7 @@ import com.anitrack.application.exception.AppExceptionEnum;
 import com.anitrack.application.model.WatchlistItemBO;
 import com.anitrack.application.model.WatchlistItemViewBO;
 import com.anitrack.domain.anime.exception.AnimeNotFoundException;
+import com.anitrack.domain.anime.exception.AnimeTotalEpisodesInvalidException;
 import com.anitrack.domain.anime.model.Anime;
 import com.anitrack.domain.anime.repo.AnimeRepo;
 import com.anitrack.domain.watchlist.enums.WatchStatus;
@@ -49,18 +50,20 @@ public class WatchlistApplication {
 
     @Transactional
     public WatchlistItemBO changeStatus(Long userId, Long animeId, WatchStatus newStatus) {
-        WatchlistItem item = watchlistRepo.getByUserAndAnime(userId, animeId);
-        if (item == null) {
-            throw new AnitrackAppException(AppExceptionEnum.WATCHLIST_ITEM_NOT_FOUND);
-        }
         WatchStatusChangedEvent event;
         try {
-            event = item.changeStatus(newStatus);
+            event = watchlistDomainService.changeStatus(userId, animeId, newStatus);
+        } catch (WatchlistItemNotFoundException e) {
+            throw new AnitrackAppException(AppExceptionEnum.WATCHLIST_ITEM_NOT_FOUND);
+        } catch (AnimeNotFoundException e) {
+            throw new AnitrackAppException(AppExceptionEnum.ANIME_NOT_FOUND);
+        } catch (AnimeTotalEpisodesInvalidException e) {
+            throw new AnitrackAppException(AppExceptionEnum.ANIME_TOTAL_EPISODES_INVALID);
         } catch (IllegalWatchStatusTransitionException e) {
             throw new AnitrackAppException(AppExceptionEnum.ILLEGAL_WATCH_STATUS_TRANSITION);
         }
-        watchlistRepo.update(item);
         eventPublisher.publishEvent(event);
+        WatchlistItem item = watchlistRepo.getByUserAndAnime(userId, animeId);
         return toBO(item);
     }
 
