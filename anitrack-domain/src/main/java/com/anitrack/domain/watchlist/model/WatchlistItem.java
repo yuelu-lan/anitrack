@@ -65,15 +65,13 @@ public class WatchlistItem {
         if (this.status != WatchStatus.WATCHING) {
             throw new IllegalWatchProgressException("只有观看中的番剧才能更新进度");
         }
-        if (episode == null || episode <= 0) {
-            throw new IllegalWatchProgressException("观看进度必须大于0");
-        }
-        if (episode < this.currentEpisode) {
-            throw new IllegalWatchProgressException("观看进度不能倒退");
+        if (episode == null || episode < 0) {
+            throw new IllegalWatchProgressException("观看进度必须大于等于0");
         }
         if (totalEpisodes != null && totalEpisodes > 0 && episode > totalEpisodes) {
             throw new IllegalWatchProgressException("观看进度不能超过总集数");
         }
         this.currentEpisode = episode;
+        this.updateTime = LocalDateTime.now();
     }
 }

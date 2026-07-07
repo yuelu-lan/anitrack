@@ -166,26 +166,42 @@ class WatchlistItemTest {
     }
 
     @Test
-    void updateProgress_whenEpisodeIsZero_shouldThrowException() {
+    void updateProgress_whenEpisodeIsZero_shouldSucceed() {
         // given
         WatchlistItem item = WatchlistItem.create(1L, 100L);
         item.changeStatus(WatchStatus.WATCHING);
 
-        // when & then
-        assertThatThrownBy(() -> item.updateProgress(0, 12))
-            .isInstanceOf(IllegalWatchProgressException.class);
+        // when
+        item.updateProgress(0, 12);
+
+        // then
+        assertThat(item.getCurrentEpisode()).isZero();
     }
 
     @Test
-    void updateProgress_whenEpisodeRegresses_shouldThrowException() {
+    void updateProgress_whenEpisodeRegresses_shouldSucceed() {
         // given
         WatchlistItem item = WatchlistItem.create(1L, 100L);
         item.changeStatus(WatchStatus.WATCHING);
         item.updateProgress(5, 12);
 
-        // when & then
-        assertThatThrownBy(() -> item.updateProgress(3, 12))
-            .isInstanceOf(IllegalWatchProgressException.class);
+        // when
+        item.updateProgress(3, 12);
+
+        // then
+        assertThat(item.getCurrentEpisode()).isEqualTo(3);
+    }
+
+    @Test
+    void updateProgress_whenValid_shouldRefreshUpdateTime() {
+        // given
+        WatchlistItem item = WatchlistItem.reconstitute(10L, 1L, 100L, WatchStatus.WATCHING, 0, null);
+
+        // when
+        item.updateProgress(5, 12);
+
+        // then
+        assertThat(item.getUpdateTime()).isNotNull();
     }
 
     @Test
