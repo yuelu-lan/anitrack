@@ -1,5 +1,6 @@
 package com.anitrack.domain.watchlist.model;
 
+import com.anitrack.domain.anime.exception.AnimeTotalEpisodesInvalidException;
 import com.anitrack.domain.watchlist.enums.WatchStatus;
 import com.anitrack.domain.watchlist.exception.IllegalWatchProgressException;
 import com.anitrack.domain.watchlist.exception.IllegalWatchStatusTransitionException;
@@ -40,7 +41,7 @@ class WatchlistItemTest {
         WatchlistItem item = WatchlistItem.create(1L, 100L);
 
         // when
-        WatchStatusChangedEvent event = item.changeStatus(WatchStatus.WATCHING);
+        WatchStatusChangedEvent event = item.changeStatus(WatchStatus.WATCHING, 12);
 
         // then
         assertThat(item.getStatus()).isEqualTo(WatchStatus.WATCHING);
@@ -54,10 +55,10 @@ class WatchlistItemTest {
     void changeStatus_whenWatchingToWatched_shouldSucceed() {
         // given
         WatchlistItem item = WatchlistItem.create(1L, 100L);
-        item.changeStatus(WatchStatus.WATCHING);
+        item.changeStatus(WatchStatus.WATCHING, 12);
 
         // when
-        item.changeStatus(WatchStatus.WATCHED);
+        item.changeStatus(WatchStatus.WATCHED, 12);
 
         // then
         assertThat(item.getStatus()).isEqualTo(WatchStatus.WATCHED);
@@ -67,10 +68,10 @@ class WatchlistItemTest {
     void changeStatus_whenWatchingToDropped_shouldSucceed() {
         // given
         WatchlistItem item = WatchlistItem.create(1L, 100L);
-        item.changeStatus(WatchStatus.WATCHING);
+        item.changeStatus(WatchStatus.WATCHING, 12);
 
         // when
-        item.changeStatus(WatchStatus.DROPPED);
+        item.changeStatus(WatchStatus.DROPPED, 12);
 
         // then
         assertThat(item.getStatus()).isEqualTo(WatchStatus.DROPPED);
@@ -80,12 +81,12 @@ class WatchlistItemTest {
     void changeStatus_whenDroppedToWatching_shouldSucceedAndKeepProgress() {
         // given
         WatchlistItem item = WatchlistItem.create(1L, 100L);
-        item.changeStatus(WatchStatus.WATCHING);
+        item.changeStatus(WatchStatus.WATCHING, 12);
         item.updateProgress(5, 12);
-        item.changeStatus(WatchStatus.DROPPED);
+        item.changeStatus(WatchStatus.DROPPED, 12);
 
         // when
-        item.changeStatus(WatchStatus.WATCHING);
+        item.changeStatus(WatchStatus.WATCHING, 12);
 
         // then
         assertThat(item.getStatus()).isEqualTo(WatchStatus.WATCHING);
@@ -98,7 +99,7 @@ class WatchlistItemTest {
         WatchlistItem item = WatchlistItem.create(1L, 100L);
 
         // when
-        item.changeStatus(WatchStatus.WATCHED);
+        item.changeStatus(WatchStatus.WATCHED, 12);
 
         // then
         assertThat(item.getStatus()).isEqualTo(WatchStatus.WATCHED);
@@ -110,7 +111,7 @@ class WatchlistItemTest {
         WatchlistItem item = WatchlistItem.create(1L, 100L);
 
         // when
-        item.changeStatus(WatchStatus.DROPPED);
+        item.changeStatus(WatchStatus.DROPPED, 12);
 
         // then
         assertThat(item.getStatus()).isEqualTo(WatchStatus.DROPPED);
@@ -120,12 +121,12 @@ class WatchlistItemTest {
     void changeStatus_whenDroppedToWantToWatch_shouldSucceedAndKeepProgress() {
         // given
         WatchlistItem item = WatchlistItem.create(1L, 100L);
-        item.changeStatus(WatchStatus.WATCHING);
+        item.changeStatus(WatchStatus.WATCHING, 12);
         item.updateProgress(5, 12);
-        item.changeStatus(WatchStatus.DROPPED);
+        item.changeStatus(WatchStatus.DROPPED, 12);
 
         // when
-        item.changeStatus(WatchStatus.WANT_TO_WATCH);
+        item.changeStatus(WatchStatus.WANT_TO_WATCH, 12);
 
         // then
         assertThat(item.getStatus()).isEqualTo(WatchStatus.WANT_TO_WATCH);
@@ -136,11 +137,11 @@ class WatchlistItemTest {
     void changeStatus_whenWatchedToWatching_shouldThrowException() {
         // given
         WatchlistItem item = WatchlistItem.create(1L, 100L);
-        item.changeStatus(WatchStatus.WATCHING);
-        item.changeStatus(WatchStatus.WATCHED);
+        item.changeStatus(WatchStatus.WATCHING, 12);
+        item.changeStatus(WatchStatus.WATCHED, 12);
 
         // when & then
-        assertThatThrownBy(() -> item.changeStatus(WatchStatus.WATCHING))
+        assertThatThrownBy(() -> item.changeStatus(WatchStatus.WATCHING, 12))
             .isInstanceOf(IllegalWatchStatusTransitionException.class);
     }
 
@@ -148,11 +149,52 @@ class WatchlistItemTest {
     void changeStatus_whenWatchingToWantToWatch_shouldThrowException() {
         // given
         WatchlistItem item = WatchlistItem.create(1L, 100L);
-        item.changeStatus(WatchStatus.WATCHING);
+        item.changeStatus(WatchStatus.WATCHING, 12);
 
         // when & then
-        assertThatThrownBy(() -> item.changeStatus(WatchStatus.WANT_TO_WATCH))
+        assertThatThrownBy(() -> item.changeStatus(WatchStatus.WANT_TO_WATCH, 12))
             .isInstanceOf(IllegalWatchStatusTransitionException.class);
+    }
+
+    @Test
+    void changeStatus_whenTransitionToWatched_shouldSetProgressToTotalEpisodes() {
+        // given
+        WatchlistItem item = WatchlistItem.create(1L, 100L);
+        item.changeStatus(WatchStatus.WATCHING, 12);
+        item.updateProgress(5, 12);
+
+        // when
+        item.changeStatus(WatchStatus.WATCHED, 12);
+
+        // then
+        assertThat(item.getStatus()).isEqualTo(WatchStatus.WATCHED);
+        assertThat(item.getCurrentEpisode()).isEqualTo(12);
+    }
+
+    @Test
+    void changeStatus_whenWantToWatchToWatched_shouldSetProgressToTotalEpisodes() {
+        // given
+        WatchlistItem item = WatchlistItem.create(1L, 100L);
+
+        // when
+        item.changeStatus(WatchStatus.WATCHED, 12);
+
+        // then
+        assertThat(item.getStatus()).isEqualTo(WatchStatus.WATCHED);
+        assertThat(item.getCurrentEpisode()).isEqualTo(12);
+    }
+
+    @Test
+    void changeStatus_whenTransitionToWatchedAndTotalEpisodesInvalid_shouldThrow() {
+        // given
+        WatchlistItem item = WatchlistItem.create(1L, 100L);
+        item.changeStatus(WatchStatus.WATCHING, 12);
+
+        // when & then
+        assertThatThrownBy(() -> item.changeStatus(WatchStatus.WATCHED, null))
+            .isInstanceOf(AnimeTotalEpisodesInvalidException.class);
+        assertThatThrownBy(() -> item.changeStatus(WatchStatus.WATCHED, 0))
+            .isInstanceOf(AnimeTotalEpisodesInvalidException.class);
     }
 
     @Test
@@ -169,7 +211,7 @@ class WatchlistItemTest {
     void updateProgress_whenEpisodeIsZero_shouldSucceed() {
         // given
         WatchlistItem item = WatchlistItem.create(1L, 100L);
-        item.changeStatus(WatchStatus.WATCHING);
+        item.changeStatus(WatchStatus.WATCHING, 12);
 
         // when
         item.updateProgress(0, 12);
@@ -182,7 +224,7 @@ class WatchlistItemTest {
     void updateProgress_whenEpisodeRegresses_shouldSucceed() {
         // given
         WatchlistItem item = WatchlistItem.create(1L, 100L);
-        item.changeStatus(WatchStatus.WATCHING);
+        item.changeStatus(WatchStatus.WATCHING, 12);
         item.updateProgress(5, 12);
 
         // when
@@ -208,7 +250,7 @@ class WatchlistItemTest {
     void updateProgress_whenEpisodeExceedsTotalEpisodes_shouldThrowException() {
         // given
         WatchlistItem item = WatchlistItem.create(1L, 100L);
-        item.changeStatus(WatchStatus.WATCHING);
+        item.changeStatus(WatchStatus.WATCHING, 12);
 
         // when & then
         assertThatThrownBy(() -> item.updateProgress(13, 12))
@@ -219,7 +261,7 @@ class WatchlistItemTest {
     void updateProgress_whenTotalEpisodesIsZero_shouldAllowAnyEpisode() {
         // given
         WatchlistItem item = WatchlistItem.create(1L, 100L);
-        item.changeStatus(WatchStatus.WATCHING);
+        item.changeStatus(WatchStatus.WATCHING, 12);
 
         // when
         item.updateProgress(999, 0);
@@ -232,7 +274,7 @@ class WatchlistItemTest {
     void updateProgress_whenValid_shouldUpdateCurrentEpisode() {
         // given
         WatchlistItem item = WatchlistItem.create(1L, 100L);
-        item.changeStatus(WatchStatus.WATCHING);
+        item.changeStatus(WatchStatus.WATCHING, 12);
 
         // when
         item.updateProgress(5, 12);
