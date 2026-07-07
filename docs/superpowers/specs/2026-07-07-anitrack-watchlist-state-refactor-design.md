@@ -2,7 +2,7 @@
 
 ## 背景与范围
 
-Phase 1b 已实现的追番状态机存在若干语义问题：想看阶段无法直接标记看完/弃番、在看阶段进度不能倒退、追番入口不校验番剧总集数、转完看时进度未自动置满等。本次重构在不改变模块划分与持久化方案的前提下，重新定义状态机边、进度校验规则与 `changeStatus` 的进度联动行为，并顺手修复 `updateProgress` 不刷新 `updateTime` 的遗留问题。
+Phase 1b 已实现的追番状态机存在若干语义问题：想看阶段无法直接标记看完/弃番、在看阶段进度不能倒退、转完看时进度未自动置满、集数异常的番剧无法追番等。本次重构在不改变模块划分与持久化方案的前提下，重新定义状态机边、进度校验规则、`changeStatus` 的进度联动与集数有效性约束，并顺手修复 `updateProgress` 不刷新 `updateTime` 的遗留问题。
 
 仅覆盖 `Watchlist` 上下文聚合根行为与相关编排层调整，不涉及 `Review`、`Anime` 上下文内部逻辑变更，不新增 API 端点。
 
@@ -32,7 +32,8 @@ DROPPED       → WATCHING / WANT_TO_WATCH
 ### 想看（WANT_TO_WATCH）
 
 - 进度 = 0，不可调用 `updateProgress`
-- 可转：在看（进度保持 0）/ 看完（进度置为 `totalEpisodes`）/ 弃番（进度保持）
+- 可转：在看（需 `totalEpisodes` 有效，进度保持 0）/ 看完（需 `totalEpisodes` 有效，进度置为 `totalEpisodes`）/ 弃番（进度保持）
+- 集数异常（`totalEpisodes` 为 `null` 或 `<= 0`）时：只能转弃番，转在看/看完由 DomainService 拦截抛 `AnimeTotalEpisodesInvalidException`
 
 ### 在看（WATCHING）
 
@@ -40,15 +41,18 @@ DROPPED       → WATCHING / WANT_TO_WATCH
 - 可转：看完（进度置为 `totalEpisodes`）/ 弃番（进度保持）
 - 可改进度：允许任意值，含倒退（如 4→2）
 - **取消**"进度达到最后一集自动转看完"逻辑（不在 `updateProgress` 内触发状态变更）
+- 进入此状态需 `totalEpisodes` 有效（由 DomainService.changeStatus 校验）
 
 ### 看完（WATCHED）
 
 - 终态，不可转其他状态，不可改进度
+- 进入此状态需 `totalEpisodes` 有效（转看完时进度需置满）
 
 ### 弃番（DROPPED）
 
 - 可恢复到在看或想看，恢复时进度保持当前值不清零
 - 不可直接转看完，不可改进度
+- 恢复到在看需 `totalEpisodes` 有效（与想看转在看同约束）
 
 ## 进度校验规则
 
@@ -68,35 +72,37 @@ DROPPED       → WATCHING / WANT_TO_WATCH
 
 > 进度校验放宽后，`WatchlistItemTest` 中 `updateProgress_whenEpisodeIsZero_shouldThrowException`、`updateProgress_whenEpisodeRegresses_shouldThrowException` 两条测试的语义反转，需改为断言成功。
 
-## changeStatus 的进度联动
+## changeStatus 的进度联动与集数校验
 
 `WatchlistItem.changeStatus` 现有无参签名仅做状态转移，不处理进度。本次需求要求"转看完时进度置为 `totalEpisodes`"，因此聚合根需要拿到 `totalEpisodes`。
 
 方案：`changeStatus` 方法签名扩展为 `changeStatus(WatchStatus newStatus, Integer totalEpisodes)`，由调用方（DomainService）从 `AnimeRepo` 取 `totalEpisodes` 传入。
 
-行为：
+聚合根行为：
 
-| 目标状态 | 进度处理 |
-| --- | --- |
-| `WATCHED` | `currentEpisode = totalEpisodes`（需 `totalEpisodes` 有效，否则抛 `AnimeTotalEpisodesInvalidException`——见下） |
-| `WATCHING` | 保持不变 |
-| `DROPPED` | 保持不变 |
-| `WANT_TO_WATCH` | 保持不变 |
+| 目标状态 | 进度处理 | 集数校验 |
+| --- | --- | --- |
+| `WATCHED` | `currentEpisode = totalEpisodes` | 自我保护：`totalEpisodes` 无效时抛 `AnimeTotalEpisodesInvalidException` |
+| `WATCHING` | 保持不变 | 不校验（DomainService 已校验） |
+| `DROPPED` | 保持不变 | 不校验 |
+| `WANT_TO_WATCH` | 保持不变 | 不校验 |
 
-转 `WATCHED` 时若 `totalEpisodes` 为 `null` 或 `<= 0`：抛 `AnimeTotalEpisodesInvalidException`（与追番入口校验复用同一异常，位于 `domain/anime/exception/`），消息为"番剧总集数无效，无法追番"。应用层统一翻译为 `ANIME_TOTAL_EPISODES_INVALID`。
+聚合根 `changeStatus(WATCHED)` 自我保护：若 `totalEpisodes` 为 `null` 或 `<= 0`，抛 `AnimeTotalEpisodesInvalidException`（位于 `domain/anime/exception/`，构造参数为 `animeId`，聚合根持有 `animeId`）。此场景理论上不会触发——DomainService 已在调用前校验。
 
-> 此场景理论上不会出现——追番入口已校验总集数有效。但聚合根作为不变量守护者，仍需对此自我保护，不依赖调用方契约。`AnimeTotalEpisodesInvalidException` 构造参数为 `animeId`，聚合根内持有 `animeId`，可正常抛出。
+### DomainService 统一集数校验
+
+`WatchlistDomainService.changeStatus` 在调用聚合根前，针对目标状态做集数校验：
+
+- 目标为 `WATCHING` 或 `WATCHED`：校验 `anime.getTotalEpisodes()` 有效（非 `null` 且 `> 0`），否则抛 `AnimeTotalEpisodesInvalidException`
+- 目标为 `DROPPED` 或 `WANT_TO_WATCH`：不校验
+
+> 集数校验职责划分：DomainService 管跨上下文校验（能拿到 anime），聚合根管自身不变量（转 WATCHED 时置满进度需有效 totalEpisodes）。WATCHING 的集数校验只在 DomainService 做，聚合根不重复。
 
 事件发布不变：`changeStatus` 返回 `WatchStatusChangedEvent`，由应用层 `ApplicationEventPublisher` 发布。
 
-## 追番入口校验
+## 追番入口
 
-`WatchlistDomainService.addToWatchlist` 在确认 anime 存在后，校验 `anime.getTotalEpisodes()`：
-
-- 为 `null` 或 `<= 0` 抛新异常 `AnimeTotalEpisodesInvalidException(animeId)`（继承 `AnitrackDomainException`）
-- 应用层翻译为 `AppExceptionEnum.ANIME_TOTAL_EPISODES_INVALID`（新增枚举，code `40103`，消息"番剧总集数无效，无法追番"）
-
-校验仅在 `addToWatchlist` 入口进行；后续 `updateProgress`、`changeStatus` 不重复校验（依赖追番时已保证有效），但聚合根 `changeStatus(WATCHED)` 仍自我保护。
+`WatchlistDomainService.addToWatchlist` **不再校验** `totalEpisodes`——集数异常的番剧允许追番（进入想看状态），只是后续不能转在看/看完。仅校验 anime 存在性与重复追番。
 
 ## 应用层编排调整
 
@@ -104,7 +110,7 @@ DROPPED       → WATCHING / WANT_TO_WATCH
 
 现状 `WatchlistApplication.changeStatus` 直接操作 `watchlistRepo`，与 `addToWatchlist`/`updateProgress` 走 `WatchlistDomainService` 的风格不一致。本次因 `changeStatus` 需要取 `totalEpisodes`，改为统一走 DomainService：
 
-- `WatchlistDomainService` 新增 `changeStatus(Long userId, Long animeId, WatchStatus newStatus)` 方法：取 item、取 anime、调聚合根 `changeStatus(newStatus, anime.getTotalEpisodes())`、`watchlistRepo.update(item)`、返回 `WatchlistItem`
+- `WatchlistDomainService` 新增 `changeStatus(Long userId, Long animeId, WatchStatus newStatus)` 方法：取 item、取 anime、目标为 `WATCHING`/`WATCHED` 时校验 `totalEpisodes` 有效、调聚合根 `changeStatus(newStatus, anime.getTotalEpisodes())`、`watchlistRepo.update(item)`、返回 `WatchlistItem`
 - `WatchlistApplication.changeStatus` 改为委托 DomainService，捕获 `IllegalWatchStatusTransitionException` 翻译为 `ILLEGAL_WATCH_STATUS_TRANSITION`，捕获 `AnimeTotalEpisodesInvalidException` 翻译为 `ANIME_TOTAL_EPISODES_INVALID`，捕获 `WatchlistItemNotFoundException`/`AnimeNotFoundException` 翻译为对应枚举，发布 `WatchStatusChangedEvent`
 - 应用层不再直接依赖 `watchlistRepo` 执行 `changeStatus`（`updateProgress`/`getWatchlistItem`/`listMyWatchlist` 等其他方法的 repo 依赖暂不动，保持最小改动）
 
@@ -114,32 +120,32 @@ DROPPED       → WATCHING / WANT_TO_WATCH
 
 ## 异常翻译表
 
-| Domain 异常 | AppExceptionEnum | code | 消息 |
-| --- | --- | --- | --- |
-| `AnimeNotFoundException` | `ANIME_NOT_FOUND` | 40102 | 番剧不存在 |
-| `AnimeTotalEpisodesInvalidException`（新增） | `ANIME_TOTAL_EPISODES_INVALID`（新增） | 40103 | 番剧总集数无效，无法追番 |
-| `WatchlistItemNotFoundException` | `WATCHLIST_ITEM_NOT_FOUND` | 40202 | 追番记录不存在 |
-| `WatchlistItemAlreadyExistsException` | `WATCHLIST_ITEM_ALREADY_EXISTS` | 40201 | 该番剧已在追番列表中 |
-| `IllegalWatchStatusTransitionException` | `ILLEGAL_WATCH_STATUS_TRANSITION` | 40203 | 非法的追番状态转移 |
-| `IllegalWatchProgressException` | `ILLEGAL_WATCH_PROGRESS` | 40204 | 追番进度更新不合法 |
+| Domain 异常 | AppExceptionEnum | code | 消息 | 抛出点 |
+| --- | --- | --- | --- | --- |
+| `AnimeNotFoundException` | `ANIME_NOT_FOUND` | 40102 | 番剧不存在 | DomainService |
+| `AnimeTotalEpisodesInvalidException`（新增） | `ANIME_TOTAL_EPISODES_INVALID`（新增） | 40103 | 番剧总集数无效 | DomainService.changeStatus（转在看/看完）；聚合根 changeStatus(WATCHED) 自我保护 |
+| `WatchlistItemNotFoundException` | `WATCHLIST_ITEM_NOT_FOUND` | 40202 | 追番记录不存在 | DomainService |
+| `WatchlistItemAlreadyExistsException` | `WATCHLIST_ITEM_ALREADY_EXISTS` | 40201 | 该番剧已在追番列表中 | DomainService.addToWatchlist |
+| `IllegalWatchStatusTransitionException` | `ILLEGAL_WATCH_STATUS_TRANSITION` | 40203 | 非法的追番状态转移 | 聚合根 changeStatus |
+| `IllegalWatchProgressException` | `ILLEGAL_WATCH_PROGRESS` | 40204 | 追番进度更新不合法 | 聚合根 updateProgress |
 
 ## 涉及修改的文件
 
 ### domain 层
 
-- `WatchlistItem.java` —— `TRANSITIONS` 表扩展；`updateProgress` 校验调整（下限 `>=0`、删倒退、刷新 `updateTime`）；`changeStatus` 签名扩展为 `(newStatus, totalEpisodes)` 并实现转 `WATCHED` 时进度置满
-- `AnimeTotalEpisodesInvalidException.java`（新增）—— `domain/anime/exception/` 下
+- `WatchlistItem.java` —— `TRANSITIONS` 表扩展；`updateProgress` 校验调整（下限 `>=0`、删倒退、刷新 `updateTime`）；`changeStatus` 签名扩展为 `(newStatus, totalEpisodes)`，实现转 `WATCHED` 时进度置满 + 集数无效自我保护
+- `AnimeTotalEpisodesInvalidException.java`（新增）—— `domain/anime/exception/` 下，构造参数为 `animeId`
 
 ### application 层
 
-- `WatchlistDomainService.java` —— `addToWatchlist` 加总集数校验；新增 `changeStatus(userId, animeId, newStatus)` 方法
-- `WatchlistApplication.java` —— `changeStatus` 改为委托 DomainService，调整异常捕获
+- `WatchlistDomainService.java` —— `addToWatchlist` 不再校验总集数；新增 `changeStatus(userId, animeId, newStatus)` 方法（含转在看/看完的集数校验）
+- `WatchlistApplication.java` —— `changeStatus` 改为委托 DomainService，捕获 `AnimeTotalEpisodesInvalidException`/`IllegalWatchStatusTransitionException`/`WatchlistItemNotFoundException`/`AnimeNotFoundException` 并翻译
 - `AppExceptionEnum.java` —— 新增 `ANIME_TOTAL_EPISODES_INVALID`
 
 ### 测试
 
-- `WatchlistItemTest.java` —— 调整状态机相关测试（新增 `WANT_TO_WATCH → WATCHED/DROPPED`、`DROPPED → WANT_TO_WATCH`；删除"想看→看完非法"断言）；调整进度测试（episode=0 改为成功、倒退改为成功、新增 `updateTime` 刷新断言）；新增 `changeStatus(WATCHED)` 进度置满测试
-- `WatchlistDomainServiceTest.java` —— `addToWatchlist` 加总集数异常用例；新增 `changeStatus` 编排用例
+- `WatchlistItemTest.java` —— 调整状态机相关测试（新增 `WANT_TO_WATCH → WATCHED/DROPPED`、`DROPPED → WANT_TO_WATCH`；删除"想看→看完非法"断言）；调整进度测试（episode=0 改为成功、倒退改为成功、新增 `updateTime` 刷新断言）；新增 `changeStatus(WATCHED)` 进度置满测试、`changeStatus(WATCHED)` 集数无效自我保护测试
+- `WatchlistDomainServiceTest.java` —— `addToWatchlist` 集数异常用例改为允许追番（不再抛异常）；新增 `changeStatus` 编排用例（含转在看/看完集数异常拦截、转看完进度置满、转弃番不校验集数）
 - `WatchlistApplicationTest.java` —— `changeStatus` 测试改为 mock `WatchlistDomainService.changeStatus`（不再 mock `watchlistRepo`）；调整"想看→看完非法"用例为成功路径；新增 `ANIME_TOTAL_EPISODES_INVALID` 翻译用例
 - `WatchlistControllerTest.java` —— 无需新增（接口未变），但 `changeStatus_whenIllegalTransition_shouldReturnBusinessError` 用例的语义需调整（原用 `WATCHED` 作为非法目标，现 `WANT_TO_WATCH → WATCHED` 合法，改用 `WATCHED → WATCHING` 作为非法转移样例）
 
