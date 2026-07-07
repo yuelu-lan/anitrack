@@ -1,5 +1,5 @@
 {
-  "name": "anitrack-web",
+  "name": "webui",
   "version": "1.0.0",
   "private": true,
   "scripts": {
