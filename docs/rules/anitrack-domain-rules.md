@@ -42,16 +42,17 @@ enum WatchStatus { WANT_TO_WATCH, WATCHING, WATCHED, DROPPED }
 
 | 当前状态 | 可转移至 |
 | --- | --- |
-| WANT_TO_WATCH | WATCHING |
+| WANT_TO_WATCH | WATCHING、WATCHED、DROPPED |
 | WATCHING | WATCHED、DROPPED |
 | WATCHED | （终态，无可转移状态） |
-| DROPPED | WATCHING |
+| DROPPED | WATCHING、WANT_TO_WATCH |
 
-`WATCHED` 为终态，不可转移至其他任何状态；`DROPPED → WATCHING`（重新观看）保留弃番时的 `currentEpisode` 进度，不清零。`changeStatus(newStatus)` 方法查转移表校验，不合法则抛 `IllegalWatchStatusTransitionException`。
+`WATCHED` 为终态，不可转移至其他任何状态；`DROPPED → WATCHING`（重新观看）/ `DROPPED → WANT_TO_WATCH`（重置为想看）保留弃番时的 `currentEpisode` 进度，不清零。`changeStatus(newStatus, totalEpisodes)` 方法查转移表校验，不合法则抛 `IllegalWatchStatusTransitionException`；转 `WATCHED` 时置 `currentEpisode = totalEpisodes` 并对 `totalEpisodes` 有效性自我保护（无效则抛 `AnimeTotalEpisodesInvalidException`）。
 
 ### 跨上下文校验规则
 
 - 更新观看进度：仅 `WATCHING` 状态允许调用，且不能超过对应 `Anime.totalEpisodes`。这是跨上下文校验，由 `WatchlistDomainService.updateProgress(userId, animeId, episode)` 查询 Anime 上下文的仓储取到 `totalEpisodes` 后，委托给聚合根方法 `WatchlistItem.updateProgress(episode, totalEpisodes)` 执行校验与赋值，不允许 `WatchlistItem` 聚合根直接依赖 `AnimeRepo`
+- 变更状态：目标为 `WATCHING` 或 `WATCHED` 时需 `Anime.totalEpisodes` 有效（非 `null` 且 `> 0`），否则抛 `AnimeTotalEpisodesInvalidException`。由 `WatchlistDomainService.changeStatus(userId, animeId, newStatus)` 取 anime 后做跨上下文集数校验，再委托聚合根 `changeStatus(newStatus, totalEpisodes)` 完成状态转移与进度联动（转 `WATCHED` 置满）。集数校验职责划分：DomainService 管跨上下文校验（能拿到 anime），聚合根管自身不变量（转 `WATCHED` 置满进度需有效 `totalEpisodes` 的自我保护）。`changeStatus` 返回 `WatchStatusChangedEvent`，应用层发布
 - 领域事件：`WatchStatusChangedEvent(userId, animeId, oldStatus, newStatus)`，聚合内只产生事件对象，由 `WatchlistApplication` 通过 Spring `ApplicationEventPublisher` 发布，监听器使用 `@TransactionalEventListener` 确保在事务提交后才执行，避免 domain 层直接依赖 Spring 类型
 
 ## Review 上下文：评价
