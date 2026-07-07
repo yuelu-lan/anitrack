@@ -282,4 +282,17 @@ class WatchlistItemTest {
         // then
         assertThat(item.getCurrentEpisode()).isEqualTo(5);
     }
+
+    @Test
+    void changeStatus_whenTotalEpisodesIsOne_shouldAllowWatchingWithProgressZero() {
+        // given
+        WatchlistItem item = WatchlistItem.create(1L, 100L);
+
+        // when
+        item.changeStatus(WatchStatus.WATCHING, 1);
+
+        // then
+        assertThat(item.getStatus()).isEqualTo(WatchStatus.WATCHING);
+        assertThat(item.getCurrentEpisode()).isZero();
+    }
 }

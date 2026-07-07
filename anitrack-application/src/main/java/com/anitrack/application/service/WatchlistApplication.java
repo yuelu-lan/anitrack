@@ -64,6 +64,9 @@ public class WatchlistApplication {
         }
         eventPublisher.publishEvent(event);
         WatchlistItem item = watchlistRepo.getByUserAndAnime(userId, animeId);
+        if (item == null) {
+            throw new AnitrackAppException(AppExceptionEnum.WATCHLIST_ITEM_NOT_FOUND);
+        }
         return toBO(item);
     }
 
