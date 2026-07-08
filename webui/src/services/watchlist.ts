@@ -1,44 +1,54 @@
 import { request } from '@umijs/max';
 import type { ApiResult } from '@/types/common';
-import type { WatchlistItem, WatchlistItemView, WatchStatus } from '@/types/watchlist';
+import type {
+  WatchlistItem,
+  WatchlistItemDTO,
+  WatchlistItemView,
+  WatchlistItemViewDTO,
+  WatchStatus,
+} from '@/types/watchlist';
+
+function toWatchlistItem(dto: WatchlistItemDTO): WatchlistItem {
+  return { ...dto, status: dto.status.name as WatchStatus };
+}
 
 export async function addToWatchlist(animeId: number) {
-  const res = await request<ApiResult<WatchlistItem>>('/api/watchlist/add', {
+  const res = await request<ApiResult<WatchlistItemDTO>>('/api/watchlist/add', {
     method: 'POST',
     data: { animeId },
   });
-  return res.data;
+  return toWatchlistItem(res.data);
 }
 
 export async function changeWatchStatus(animeId: number, status: WatchStatus) {
-  const res = await request<ApiResult<WatchlistItem>>('/api/watchlist/change_status', {
+  const res = await request<ApiResult<WatchlistItemDTO>>('/api/watchlist/change_status', {
     method: 'POST',
     data: { animeId, status },
   });
-  return res.data;
+  return toWatchlistItem(res.data);
 }
 
 export async function updateWatchProgress(animeId: number, episode: number) {
-  const res = await request<ApiResult<WatchlistItem>>('/api/watchlist/update_progress', {
+  const res = await request<ApiResult<WatchlistItemDTO>>('/api/watchlist/update_progress', {
     method: 'POST',
     data: { animeId, episode },
   });
-  return res.data;
+  return toWatchlistItem(res.data);
 }
 
 export async function getWatchlistDetail(animeId: number) {
-  const res = await request<ApiResult<WatchlistItem>>('/api/watchlist/detail', {
+  const res = await request<ApiResult<WatchlistItemDTO>>('/api/watchlist/detail', {
     method: 'POST',
     data: { animeId },
     skipErrorHandler: true,
   });
-  return res.data;
+  return toWatchlistItem(res.data);
 }
 
 export async function listWatchlist(status?: WatchStatus) {
-  const res = await request<ApiResult<WatchlistItemView[]>>('/api/watchlist/list', {
+  const res = await request<ApiResult<WatchlistItemViewDTO[]>>('/api/watchlist/list', {
     method: 'POST',
     data: { status },
   });
-  return res.data;
+  return res.data.map(toWatchlistItem) as WatchlistItemView[];
 }

@@ -4,6 +4,7 @@ import { List, Rate, Typography, Button, Space } from 'antd';
 import { listMyReviews } from '@/services/review';
 import ReviewFormModal from '@/components/ReviewFormModal';
 import type { ReviewWithAnime } from '@/types/review';
+import { formatDateTime } from '@/utils/format';
 
 const { Paragraph, Text } = Typography;
 
@@ -32,7 +33,7 @@ export default function MyReviewsPage() {
                 <Space direction="vertical">
                   <Rate disabled count={10} value={review.score} />
                   <Paragraph>{review.content}</Paragraph>
-                  <Text type="secondary">{review.createTime}</Text>
+                  <Text type="secondary">{formatDateTime(review.createTime)}</Text>
                 </Space>
               }
             />

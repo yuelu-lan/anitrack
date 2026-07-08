@@ -24,6 +24,7 @@ import { getMyReviewDetail, listReviewsByAnime } from '@/services/review';
 import type { WatchStatus, WatchlistItem } from '@/types/watchlist';
 import type { Review, ReviewWithUser } from '@/types/review';
 import ReviewFormModal from '@/components/ReviewFormModal';
+import { formatDateTime } from '@/utils/format';
 
 const { Title, Paragraph } = Typography;
 
@@ -45,7 +46,7 @@ const REVIEW_COLUMNS = [
   { title: '用户', dataIndex: 'userNickname', key: 'userNickname' },
   { title: '评分', dataIndex: 'score', key: 'score' },
   { title: '内容', dataIndex: 'content', key: 'content' },
-  { title: '时间', dataIndex: 'createTime', key: 'createTime' },
+  { title: '时间', dataIndex: 'createTime', key: 'createTime', render: (v: string) => formatDateTime(v) },
 ];
 
 export default function AnimeDetailPage() {
