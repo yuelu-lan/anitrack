@@ -4,6 +4,7 @@ target/
 *.iml
 .DS_Store
 application-local.yml
+.env
 
 # subagent-driven-development scratch state (not project content)
 .superpowers/

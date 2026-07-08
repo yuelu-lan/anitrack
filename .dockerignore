@@ -1,0 +1,12 @@
+**/target/
+.idea/
+*.iml
+.DS_Store
+.git/
+.gitignore
+application-local.yml
+webui/node_modules/
+webui/dist/
+docs/
+.superpowers/
+.claude/
