@@ -54,7 +54,11 @@ anitrack/
 
 ## 快速开始
 
-**环境要求**：JDK 17、Maven 3.6.3+、MySQL 8.x
+支持两种启动方式：**本地启动**（IDEA 开发）和 **Docker 启动**（一键起后端 + MySQL）。
+
+### 方式一：本地启动（IDEA）
+
+**环境要求**：JDK 17、Maven 3.6.3+、MySQL 8.x（本机或远程实例）
 
 **环境变量**：
 
@@ -62,20 +66,46 @@ anitrack/
 | --- | --- |
 | `DB_USERNAME` | MySQL 用户名 |
 | `DB_PASSWORD` | MySQL 密码 |
-| `JWT_SECRET` | JWT 签名密钥 |
+| `JWT_SECRET` | JWT 签名密钥（Base64，至少 32 字节） |
+
+**配置文件**：复制 `anitrack-starter/src/main/resources/application-local.yml.example` 为 `application-local.yml`，填入本地数据库密码与 JWT 密钥。
 
 **启动**：
 
 ```bash
 mvn clean install
-DB_USERNAME=xxx DB_PASSWORD=xxx JWT_SECRET=xxx mvn -pl anitrack-starter spring-boot:run
+DB_USERNAME=xxx DB_PASSWORD=xxx JWT_SECRET=xxx \
+  mvn -pl anitrack-starter spring-boot:run -Dspring-boot.run.profiles=local
 ```
 
-服务默认监听 `8080` 端口，数据库表结构由 Flyway 自动创建。
+或在 IDEA 启动配置中设置 `Active profiles: local`。
+
+### 方式二：Docker 启动
+
+**环境要求**：Docker（含 Compose v2）
+
+**步骤**：
+
+```bash
+cp .env.example .env
+# 编辑 .env，设置 MySQL 密码与 JWT_SECRET
+docker compose up --build
+```
+
+`docker-compose.yml` 会启动 MySQL 8（带数据卷持久化）+ 后端应用，应用容器自动激活 `docker` profile。
+
+**配置文件**：`application-docker.yml` 已提交，密码通过 `.env` 注入环境变量，无需手动修改。
+
+### 启动说明
+
+- 服务默认监听 `8080` 端口，数据库表结构由 Flyway 自动创建（`db/migration/V1~V4`）
+- `local` / `docker` 两个 profile 会额外加载 `db/migration-dev/R__seed_demo_data.sql`，灌入演示数据（2 用户、4 番剧、5 追番、3 评价，覆盖全部追番状态）。演示账号：`alice` / `bob`，密码均为 `password123`
+- 不激活任何 profile（生产部署）时，仅执行建表脚本，不灌演示数据
+- MySQL 数据持久化在 `anitrack-mysql-data` 卷，`docker compose down` 保留数据，`docker compose down -v` 删除数据重新初始化
 
 **网络访问说明**：番剧搜索接口实时调用 [Bangumi API](https://github.com/bangumi/api)（`api.bgm.tv`），该域名在国内通常无法直连，需开启代理（如 Clash 的 TUN/系统代理模式）才能正常访问。
 
-**启动前端**：
+### 启动前端
 
 ```bash
 cd webui
