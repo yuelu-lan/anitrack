@@ -1,5 +1,6 @@
 import { history, useModel } from '@umijs/max';
 import { Button, Card, Form, Input, message } from 'antd';
+import { flushSync } from 'react-dom';
 import { login } from '@/services/user';
 import type { LoginParams } from '@/types/user';
 
@@ -7,12 +8,18 @@ export default function LoginPage() {
   const { setInitialState } = useModel('@@initialState');
 
   const onFinish = async (values: LoginParams) => {
-    const result = await login(values);
-    localStorage.setItem('token', result.token);
-    localStorage.setItem('userInfo', JSON.stringify(result.userInfo));
-    setInitialState({ currentUser: result.userInfo });
-    message.success('登录成功');
-    history.push('/anime/search');
+    try {
+      const result = await login(values);
+      localStorage.setItem('token', result.token);
+      localStorage.setItem('userInfo', JSON.stringify(result.userInfo));
+      flushSync(() => {
+        setInitialState({ currentUser: result.userInfo });
+      });
+      message.success('登录成功');
+      history.push('/anime/search');
+    } catch {
+      return;
+    }
   };
 
   return (
