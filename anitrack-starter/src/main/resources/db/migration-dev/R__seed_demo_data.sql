@@ -1,11 +1,12 @@
 -- 演示种子数据：2 用户 + 4 番剧 + 5 追番（覆盖全部状态）+ 3 评价
--- 密码均为明文 password123 的 BCrypt 哈希
+-- 密码均为明文 111111 的 BCrypt 哈希
 -- 使用 ON DUPLICATE KEY UPDATE 实现幂等，修改本文件后重启会覆盖更新
 
 INSERT INTO t_user (id, username, password_hash, nickname, role) VALUES
-    (1, 'alice', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', '爱丽丝', 'USER'),
-    (2, 'bob', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', '鲍勃', 'USER')
+    (1, 'alice', '$2a$10$lHTFe5DwbDX4.iE6l.2TseSg1hrxpzWTP/6mfGiJUNZb80rFg37Yq', '爱丽丝', 'USER'),
+    (2, 'bob', '$2a$10$lHTFe5DwbDX4.iE6l.2TseSg1hrxpzWTP/6mfGiJUNZb80rFg37Yq', '鲍勃', 'USER')
 ON DUPLICATE KEY UPDATE
+    username = VALUES(username),
     password_hash = VALUES(password_hash),
     nickname = VALUES(nickname),
     role = VALUES(role);
