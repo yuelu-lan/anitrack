@@ -15,6 +15,7 @@ import com.anitrack.starter.response.WatchlistItemResponse;
 import com.anitrack.starter.response.WatchlistItemViewResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/watchlist")
 @RequiredArgsConstructor
@@ -32,21 +34,25 @@ public class WatchlistController {
 
     @PostMapping("/add")
     public ResponseResult<WatchlistItemResponse> add(@Valid @RequestBody WatchlistAddReq req) {
-        WatchlistItemBO result = watchlistApplication.addToWatchlist(UserContextHolder.getUserId(), req.getAnimeId());
+        Long userId = UserContextHolder.getUserId();
+        log.info("加入追番, userId={}, animeId={}", userId, req.getAnimeId());
+        WatchlistItemBO result = watchlistApplication.addToWatchlist(userId, req.getAnimeId());
         return ResponseResult.success(httpConverter.watchlistItemBO2Response(result));
     }
 
     @PostMapping("/change_status")
     public ResponseResult<WatchlistItemResponse> changeStatus(@Valid @RequestBody WatchlistChangeStatusReq req) {
-        WatchlistItemBO result = watchlistApplication.changeStatus(
-            UserContextHolder.getUserId(), req.getAnimeId(), req.getStatus());
+        Long userId = UserContextHolder.getUserId();
+        log.info("追番状态变更, userId={}, animeId={}, status={}", userId, req.getAnimeId(), req.getStatus());
+        WatchlistItemBO result = watchlistApplication.changeStatus(userId, req.getAnimeId(), req.getStatus());
         return ResponseResult.success(httpConverter.watchlistItemBO2Response(result));
     }
 
     @PostMapping("/update_progress")
     public ResponseResult<WatchlistItemResponse> updateProgress(@Valid @RequestBody WatchlistUpdateProgressReq req) {
-        WatchlistItemBO result = watchlistApplication.updateProgress(
-            UserContextHolder.getUserId(), req.getAnimeId(), req.getEpisode());
+        Long userId = UserContextHolder.getUserId();
+        log.info("追番进度更新, userId={}, animeId={}, episode={}", userId, req.getAnimeId(), req.getEpisode());
+        WatchlistItemBO result = watchlistApplication.updateProgress(userId, req.getAnimeId(), req.getEpisode());
         return ResponseResult.success(httpConverter.watchlistItemBO2Response(result));
     }
 

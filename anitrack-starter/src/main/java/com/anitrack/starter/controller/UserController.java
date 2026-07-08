@@ -11,11 +11,13 @@ import com.anitrack.starter.response.ResponseResult;
 import com.anitrack.starter.response.UserInfoResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/user")
 @RequiredArgsConstructor
@@ -26,12 +28,14 @@ public class UserController {
 
     @PostMapping("/register")
     public ResponseResult<UserInfoResponse> register(@Valid @RequestBody UserRegisterReq req) {
+        log.info("用户注册请求, username={}", req.getUsername());
         UserBO userBO = userApplication.register(httpConverter.userRegisterReq2BO(req));
         return ResponseResult.success(httpConverter.bo2Response(userBO));
     }
 
     @PostMapping("/login")
     public ResponseResult<LoginResponse> login(@Valid @RequestBody UserLoginReq req) {
+        log.info("用户登录请求, username={}", req.getUsername());
         LoginBO loginBO = userApplication.login(httpConverter.userLoginReq2BO(req));
         return ResponseResult.success(httpConverter.toLoginResponse(loginBO));
     }

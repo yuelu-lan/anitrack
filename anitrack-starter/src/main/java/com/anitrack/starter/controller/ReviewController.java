@@ -18,6 +18,7 @@ import com.anitrack.starter.response.ReviewWithAnimeResponse;
 import com.anitrack.starter.response.ReviewWithUserResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/review")
 @RequiredArgsConstructor
@@ -38,15 +40,19 @@ public class ReviewController {
 
     @PostMapping("/add")
     public ResponseResult<ReviewResponse> add(@Valid @RequestBody ReviewAddReq req) {
+        Long userId = UserContextHolder.getUserId();
+        log.info("评价新增, userId={}, animeId={}", userId, req.getAnimeId());
         ReviewBO result = reviewApplication.addReview(
-            UserContextHolder.getUserId(), req.getAnimeId(), req.getScore(), req.getContent());
+            userId, req.getAnimeId(), req.getScore(), req.getContent());
         return ResponseResult.success(httpConverter.reviewBO2Response(result));
     }
 
     @PostMapping("/update")
     public ResponseResult<ReviewResponse> update(@Valid @RequestBody ReviewUpdateReq req) {
+        Long userId = UserContextHolder.getUserId();
+        log.info("评价修改, userId={}, animeId={}", userId, req.getAnimeId());
         ReviewBO result = reviewApplication.updateReview(
-            UserContextHolder.getUserId(), req.getAnimeId(), req.getScore(), req.getContent());
+            userId, req.getAnimeId(), req.getScore(), req.getContent());
         return ResponseResult.success(httpConverter.reviewBO2Response(result));
     }
 
