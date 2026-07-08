@@ -13,10 +13,12 @@ import com.anitrack.domain.user.repo.UserRepo;
 import com.anitrack.domain.user.service.TokenProvider;
 import com.anitrack.domain.user.service.UserDomainService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserApplication {
@@ -33,6 +35,7 @@ public class UserApplication {
         try {
             User savedUser = userDomainService.register(
                 registerBO.getUsername(), passwordHash, registerBO.getNickname());
+            log.info("用户注册成功, userId={}, username={}", savedUser.getId(), savedUser.getUsername());
             return userBOConverter.user2BO(savedUser);
         } catch (UsernameAlreadyExistsException e) {
             throw AnitrackAppException.build(AppExceptionEnum.USERNAME_ALREADY_EXISTS);
@@ -46,6 +49,7 @@ public class UserApplication {
         }
         UserBO userBO = userBOConverter.user2BO(user);
         String token = tokenProvider.generateToken(user.getId());
+        log.info("用户登录成功, userId={}", user.getId());
         return LoginBO.builder().user(userBO).token(token).build();
     }
 }

@@ -19,11 +19,13 @@ import com.anitrack.domain.review.service.ReviewDomainService;
 import com.anitrack.domain.user.model.User;
 import com.anitrack.domain.user.repo.UserRepo;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ReviewApplication {
@@ -47,6 +49,7 @@ public class ReviewApplication {
         } catch (IllegalReviewScoreException e) {
             throw AnitrackAppException.build(AppExceptionEnum.ILLEGAL_REVIEW_SCORE);
         }
+        log.info("评价新增, userId={}, animeId={}", userId, animeId);
         return reviewBOConverter.review2BO(review);
     }
 
@@ -62,6 +65,7 @@ public class ReviewApplication {
             throw AnitrackAppException.build(AppExceptionEnum.ILLEGAL_REVIEW_SCORE);
         }
         reviewRepo.update(review);
+        log.info("评价修改, userId={}, animeId={}", userId, animeId);
         return reviewBOConverter.review2BO(review);
     }
 

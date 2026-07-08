@@ -20,12 +20,14 @@ import com.anitrack.domain.watchlist.model.WatchlistItem;
 import com.anitrack.domain.watchlist.repo.WatchlistRepo;
 import com.anitrack.domain.watchlist.service.WatchlistDomainService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class WatchlistApplication {
@@ -47,6 +49,7 @@ public class WatchlistApplication {
         } catch (WatchlistItemAlreadyExistsException e) {
             throw AnitrackAppException.build(AppExceptionEnum.WATCHLIST_ITEM_ALREADY_EXISTS);
         }
+        log.info("加入追番列表, userId={}, animeId={}", userId, animeId);
         return watchlistBOConverter.watchlistItem2BO(item);
     }
 
@@ -69,6 +72,7 @@ public class WatchlistApplication {
         if (item == null) {
             throw AnitrackAppException.build(AppExceptionEnum.WATCHLIST_ITEM_NOT_FOUND);
         }
+        log.info("追番状态变更, userId={}, animeId={}, newStatus={}", userId, animeId, newStatus);
         return watchlistBOConverter.watchlistItem2BO(item);
     }
 
@@ -84,6 +88,7 @@ public class WatchlistApplication {
         } catch (IllegalWatchProgressException e) {
             throw AnitrackAppException.build(AppExceptionEnum.ILLEGAL_WATCH_PROGRESS);
         }
+        log.info("追番进度更新, userId={}, animeId={}, episode={}", userId, animeId, episode);
         return watchlistBOConverter.watchlistItem2BO(item);
     }
 

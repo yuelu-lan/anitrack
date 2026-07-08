@@ -26,6 +26,7 @@ public class AnimeApplication {
 
     @Transactional
     public List<AnimeBO> searchAnime(String keyword) {
+        log.info("调用Bangumi搜索, keyword={}", keyword);
         List<Anime> searchResults;
         try {
             searchResults = bangumiGateway.search(keyword);
@@ -33,6 +34,7 @@ public class AnimeApplication {
             log.error("调用Bangumi搜索接口失败, keyword={}", keyword, e);
             throw AnitrackAppException.build(AppExceptionEnum.BANGUMI_SERVICE_UNAVAILABLE);
         }
+        log.info("Bangumi搜索完成, keyword={}, count={}", keyword, searchResults.size());
         return searchResults.stream()
             .map(animeRepo::upsert)
             .map(animeBOConverter::anime2BO)
