@@ -36,7 +36,7 @@ void changeStatus_whenTransitionIsValid_shouldUpdateStatusAndReturnEvent() {
     WatchlistItem item = WatchlistItem.builder().status(WatchStatus.WANT_TO_WATCH).build();
 
     // when
-    WatchStatusChangedEvent event = item.changeStatus(WatchStatus.WATCHING);
+    WatchStatusChangedEvent event = item.changeStatus(WatchStatus.WATCHING, null);
 
     // then
     assertThat(item.getStatus()).isEqualTo(WatchStatus.WATCHING);
@@ -144,8 +144,9 @@ void changeStatus_whenTransitionIsInvalid_shouldThrowException() {
 })
 void changeStatus_whenTransitionIsLegal_shouldSucceed(WatchStatus from, WatchStatus to) {
     WatchlistItem item = WatchlistItem.builder().status(from).build();
+    Integer totalEpisodes = (to == WatchStatus.WATCHED) ? 12 : null;
 
-    item.changeStatus(to);
+    item.changeStatus(to, totalEpisodes);
 
     assertThat(item.getStatus()).isEqualTo(to);
 }
@@ -182,7 +183,7 @@ class WatchlistItemTest {
             .build();
 
         // when
-        WatchStatusChangedEvent event = item.changeStatus(WatchStatus.WATCHING);
+        WatchStatusChangedEvent event = item.changeStatus(WatchStatus.WATCHING, null);
 
         // then
         assertThat(item.getStatus()).isEqualTo(WatchStatus.WATCHING);
@@ -198,7 +199,7 @@ class WatchlistItemTest {
             .build();
 
         // when & then
-        assertThatThrownBy(() -> item.changeStatus(WatchStatus.WANT_TO_WATCH))
+        assertThatThrownBy(() -> item.changeStatus(WatchStatus.WANT_TO_WATCH, null))
             .isInstanceOf(IllegalWatchStatusTransitionException.class);
     }
 

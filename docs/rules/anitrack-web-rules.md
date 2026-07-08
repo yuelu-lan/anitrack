@@ -260,7 +260,7 @@ Long userId = UserContextHolder.getUserId();
 
 ### 7.5 权限校验
 
-anitrack 使用简单 RBAC（`user` + `role` 字段），角色校验通过 Spring Security 的 `@PreAuthorize` 或拦截器中的角色判断实现，不引入 ORG2.0 组织架构对接。
+anitrack 使用简单 RBAC（`user` + `role` 字段），角色校验通过拦截器中的角色判断实现。
 
 ## 八、日志记录规范
 

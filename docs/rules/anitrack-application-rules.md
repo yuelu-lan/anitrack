@@ -19,13 +19,13 @@ public class WatchlistApplication {
 
     @Transactional
     public void changeStatus(Long userId, Long animeId, WatchStatus newStatus) {
-        WatchlistItem item = watchlistRepo.getByUserAndAnime(userId, animeId);
-        WatchStatusChangedEvent event = item.changeStatus(newStatus);
-        watchlistRepo.save(item);
+        WatchStatusChangedEvent event = watchlistDomainService.changeStatus(userId, animeId, newStatus);
         eventPublisher.publishEvent(event);
     }
 }
 ```
+
+跨上下文集数校验与聚合根状态转移由 `WatchlistDomainService.changeStatus(userId, animeId, newStatus)` 完成：内部取 `Anime.totalEpisodes` 校验后委托聚合根 `changeStatus(newStatus, totalEpisodes)` 并落库，返回 `WatchStatusChangedEvent`，应用层只负责发布事件（详见 `anitrack-domain-rules.md` 跨上下文校验规则一节）。应用层不直接调用聚合根的 `changeStatus`，避免绕过跨上下文校验。
 
 `publishEvent` 调用本身发生在事务方法体内（提交前），但监听器的实际执行需要等到事务提交后才发生：监听器方法使用 `@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)` 而不是普通 `@EventListener`，由 Spring 保证在事务提交成功后才回调，避免监听器读到未提交的数据或在事务回滚后仍被误触发。
 
@@ -47,7 +47,7 @@ public class WatchlistBO {
 
 ### 2.3 请求响应模型
 
-跨模块传递的请求/响应对象命名为 `Xxx` + `ReqBO` / `Xxx` + `RespBO`，与 Web 层的 `XxxReq`/`XxxResponse` 区分（Web层对象在 `anitrack-starter` 模块，应用层对象在 `anitrack-application` 模块）。
+应用层内部流转的对象统一命名为 `Xxx` + `BO`（如 `WatchlistItemBO`、`UserLoginBO`），与 Web 层的 `XxxReq`/`XxxResponse` 区分（Web 层对象在 `anitrack-starter` 模块，应用层对象在 `anitrack-application` 模块）。应用层不区分"请求 BO / 响应 BO"，按用途直接命名（如登录入参 `UserLoginBO`、列表视图 `WatchlistItemViewBO`）。
 
 ### 2.4 转换器（ApplicationConverter）
 
