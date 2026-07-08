@@ -1,0 +1,8 @@
+spring:
+  datasource:
+    username: root
+    password: your-local-mysql-password
+
+anitrack:
+  jwt:
+    secret: your-jwt-secret-base64-at-least-32-bytes
