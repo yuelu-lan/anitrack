@@ -7,8 +7,16 @@ public class AnitrackAppException extends RuntimeException {
 
     private final int code;
 
-    public AnitrackAppException(AppExceptionEnum exceptionEnum) {
-        super(exceptionEnum.getMessage());
-        this.code = exceptionEnum.getCode();
+    private AnitrackAppException(int code, String message) {
+        super(message);
+        this.code = code;
+    }
+
+    public static AnitrackAppException build(String messageFormat, Object... args) {
+        return new AnitrackAppException(50000, String.format(messageFormat, args));
+    }
+
+    public static AnitrackAppException build(AppExceptionEnum exceptionEnum) {
+        return new AnitrackAppException(exceptionEnum.getCode(), exceptionEnum.getMessage());
     }
 }

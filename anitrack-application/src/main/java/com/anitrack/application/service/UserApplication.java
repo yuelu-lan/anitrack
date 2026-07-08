@@ -27,7 +27,7 @@ public class UserApplication {
     @Transactional
     public UserBO register(UserRegisterBO registerBO) {
         if (userRepo.existsByUsername(registerBO.getUsername())) {
-            throw new AnitrackAppException(AppExceptionEnum.USERNAME_ALREADY_EXISTS);
+            throw AnitrackAppException.build(AppExceptionEnum.USERNAME_ALREADY_EXISTS);
         }
         String passwordHash = passwordEncoder.encode(registerBO.getPassword());
         User user = User.register(registerBO.getUsername(), passwordHash, registerBO.getNickname());
@@ -38,7 +38,7 @@ public class UserApplication {
     public LoginBO login(UserLoginBO loginBO) {
         User user = userRepo.getByUsername(loginBO.getUsername());
         if (user == null || !passwordEncoder.matches(loginBO.getPassword(), user.getPasswordHash())) {
-            throw new AnitrackAppException(AppExceptionEnum.LOGIN_FAILED);
+            throw AnitrackAppException.build(AppExceptionEnum.LOGIN_FAILED);
         }
         UserBO userBO = userBOConverter.user2BO(user);
         String token = tokenProvider.generateToken(user.getId());

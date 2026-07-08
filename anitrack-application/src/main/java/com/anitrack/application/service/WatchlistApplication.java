@@ -43,9 +43,9 @@ public class WatchlistApplication {
         try {
             item = watchlistDomainService.addToWatchlist(userId, animeId);
         } catch (AnimeNotFoundException e) {
-            throw new AnitrackAppException(AppExceptionEnum.ANIME_NOT_FOUND);
+            throw AnitrackAppException.build(AppExceptionEnum.ANIME_NOT_FOUND);
         } catch (WatchlistItemAlreadyExistsException e) {
-            throw new AnitrackAppException(AppExceptionEnum.WATCHLIST_ITEM_ALREADY_EXISTS);
+            throw AnitrackAppException.build(AppExceptionEnum.WATCHLIST_ITEM_ALREADY_EXISTS);
         }
         return watchlistBOConverter.watchlistItem2BO(item);
     }
@@ -56,18 +56,18 @@ public class WatchlistApplication {
         try {
             event = watchlistDomainService.changeStatus(userId, animeId, newStatus);
         } catch (WatchlistItemNotFoundException e) {
-            throw new AnitrackAppException(AppExceptionEnum.WATCHLIST_ITEM_NOT_FOUND);
+            throw AnitrackAppException.build(AppExceptionEnum.WATCHLIST_ITEM_NOT_FOUND);
         } catch (AnimeNotFoundException e) {
-            throw new AnitrackAppException(AppExceptionEnum.ANIME_NOT_FOUND);
+            throw AnitrackAppException.build(AppExceptionEnum.ANIME_NOT_FOUND);
         } catch (AnimeTotalEpisodesInvalidException e) {
-            throw new AnitrackAppException(AppExceptionEnum.ANIME_TOTAL_EPISODES_INVALID);
+            throw AnitrackAppException.build(AppExceptionEnum.ANIME_TOTAL_EPISODES_INVALID);
         } catch (IllegalWatchStatusTransitionException e) {
-            throw new AnitrackAppException(AppExceptionEnum.ILLEGAL_WATCH_STATUS_TRANSITION);
+            throw AnitrackAppException.build(AppExceptionEnum.ILLEGAL_WATCH_STATUS_TRANSITION);
         }
         eventPublisher.publishEvent(event);
         WatchlistItem item = watchlistRepo.getByUserAndAnime(userId, animeId);
         if (item == null) {
-            throw new AnitrackAppException(AppExceptionEnum.WATCHLIST_ITEM_NOT_FOUND);
+            throw AnitrackAppException.build(AppExceptionEnum.WATCHLIST_ITEM_NOT_FOUND);
         }
         return watchlistBOConverter.watchlistItem2BO(item);
     }
@@ -78,11 +78,11 @@ public class WatchlistApplication {
         try {
             item = watchlistDomainService.updateProgress(userId, animeId, episode);
         } catch (WatchlistItemNotFoundException e) {
-            throw new AnitrackAppException(AppExceptionEnum.WATCHLIST_ITEM_NOT_FOUND);
+            throw AnitrackAppException.build(AppExceptionEnum.WATCHLIST_ITEM_NOT_FOUND);
         } catch (AnimeNotFoundException e) {
-            throw new AnitrackAppException(AppExceptionEnum.ANIME_NOT_FOUND);
+            throw AnitrackAppException.build(AppExceptionEnum.ANIME_NOT_FOUND);
         } catch (IllegalWatchProgressException e) {
-            throw new AnitrackAppException(AppExceptionEnum.ILLEGAL_WATCH_PROGRESS);
+            throw AnitrackAppException.build(AppExceptionEnum.ILLEGAL_WATCH_PROGRESS);
         }
         return watchlistBOConverter.watchlistItem2BO(item);
     }
@@ -90,7 +90,7 @@ public class WatchlistApplication {
     public WatchlistItemBO getWatchlistItem(Long userId, Long animeId) {
         WatchlistItem item = watchlistRepo.getByUserAndAnime(userId, animeId);
         if (item == null) {
-            throw new AnitrackAppException(AppExceptionEnum.WATCHLIST_ITEM_NOT_FOUND);
+            throw AnitrackAppException.build(AppExceptionEnum.WATCHLIST_ITEM_NOT_FOUND);
         }
         return watchlistBOConverter.watchlistItem2BO(item);
     }

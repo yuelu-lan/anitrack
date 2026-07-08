@@ -90,7 +90,7 @@ class UserControllerTest {
         // given
         Map<String, Object> request = Map.of("username", "alice", "password", "raw-password", "nickname", "Alice");
         when(mockHttpConverter.userRegisterReq2BO(any(com.anitrack.starter.request.UserRegisterReq.class))).thenCallRealMethod();
-        doThrow(new AnitrackAppException(AppExceptionEnum.USERNAME_ALREADY_EXISTS))
+        doThrow(AnitrackAppException.build(AppExceptionEnum.USERNAME_ALREADY_EXISTS))
             .when(mockUserApplication).register(any());
 
         // when & then
@@ -129,7 +129,7 @@ class UserControllerTest {
         // given
         Map<String, Object> request = Map.of("username", "alice", "password", "wrong-password");
         when(mockHttpConverter.userLoginReq2BO(any(com.anitrack.starter.request.UserLoginReq.class))).thenCallRealMethod();
-        doThrow(new AnitrackAppException(AppExceptionEnum.LOGIN_FAILED))
+        doThrow(AnitrackAppException.build(AppExceptionEnum.LOGIN_FAILED))
             .when(mockUserApplication).login(any());
 
         // when & then

@@ -31,7 +31,7 @@ public class AnimeApplication {
             searchResults = bangumiGateway.search(keyword);
         } catch (BangumiApiException e) {
             log.error("调用Bangumi搜索接口失败, keyword={}", keyword, e);
-            throw new AnitrackAppException(AppExceptionEnum.BANGUMI_SERVICE_UNAVAILABLE);
+            throw AnitrackAppException.build(AppExceptionEnum.BANGUMI_SERVICE_UNAVAILABLE);
         }
         return searchResults.stream()
             .map(animeRepo::upsert)
@@ -42,7 +42,7 @@ public class AnimeApplication {
     public AnimeBO getAnimeDetail(Long animeId) {
         Anime anime = animeRepo.getById(animeId);
         if (anime == null) {
-            throw new AnitrackAppException(AppExceptionEnum.ANIME_NOT_FOUND);
+            throw AnitrackAppException.build(AppExceptionEnum.ANIME_NOT_FOUND);
         }
         return animeBOConverter.anime2BO(anime);
     }
