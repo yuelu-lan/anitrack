@@ -147,7 +147,7 @@ class AnimeControllerTest {
     void postDetail_whenAnimeNotFound_shouldReturnBusinessError() throws Exception {
         // given
         stubValidToken();
-        doThrow(new com.anitrack.application.exception.AnitrackAppException(
+        doThrow(com.anitrack.application.exception.AnitrackAppException.build(
                 com.anitrack.application.exception.AppExceptionEnum.ANIME_NOT_FOUND))
             .when(mockAnimeApplication).getAnimeDetail(999L);
 

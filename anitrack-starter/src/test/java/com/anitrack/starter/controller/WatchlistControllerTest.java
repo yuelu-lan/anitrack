@@ -105,7 +105,7 @@ class WatchlistControllerTest {
     void add_whenAlreadyExists_shouldReturnBusinessError() throws Exception {
         // given
         stubValidToken();
-        doThrow(new com.anitrack.application.exception.AnitrackAppException(
+        doThrow(com.anitrack.application.exception.AnitrackAppException.build(
                 com.anitrack.application.exception.AppExceptionEnum.WATCHLIST_ITEM_ALREADY_EXISTS))
             .when(mockWatchlistApplication).addToWatchlist(1L, 100L);
 
@@ -166,7 +166,7 @@ class WatchlistControllerTest {
     void changeStatus_whenIllegalTransition_shouldReturnBusinessError() throws Exception {
         // given
         stubValidToken();
-        doThrow(new com.anitrack.application.exception.AnitrackAppException(
+        doThrow(com.anitrack.application.exception.AnitrackAppException.build(
                 com.anitrack.application.exception.AppExceptionEnum.ILLEGAL_WATCH_STATUS_TRANSITION))
             .when(mockWatchlistApplication).changeStatus(1L, 100L, WatchStatus.WATCHING);
 
@@ -226,7 +226,7 @@ class WatchlistControllerTest {
     void updateProgress_whenIllegalProgress_shouldReturnBusinessError() throws Exception {
         // given
         stubValidToken();
-        doThrow(new com.anitrack.application.exception.AnitrackAppException(
+        doThrow(com.anitrack.application.exception.AnitrackAppException.build(
                 com.anitrack.application.exception.AppExceptionEnum.ILLEGAL_WATCH_PROGRESS))
             .when(mockWatchlistApplication).updateProgress(1L, 100L, -1);
 
@@ -285,7 +285,7 @@ class WatchlistControllerTest {
     void detail_whenNotFound_shouldReturnBusinessError() throws Exception {
         // given
         stubValidToken();
-        doThrow(new com.anitrack.application.exception.AnitrackAppException(
+        doThrow(com.anitrack.application.exception.AnitrackAppException.build(
                 com.anitrack.application.exception.AppExceptionEnum.WATCHLIST_ITEM_NOT_FOUND))
             .when(mockWatchlistApplication).getWatchlistItem(1L, 999L);
 

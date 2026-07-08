@@ -98,7 +98,7 @@ class ReviewControllerTest {
     void add_whenNotAllowed_shouldReturnBusinessError() throws Exception {
         // given
         stubValidToken();
-        doThrow(new com.anitrack.application.exception.AnitrackAppException(
+        doThrow(com.anitrack.application.exception.AnitrackAppException.build(
                 com.anitrack.application.exception.AppExceptionEnum.REVIEW_NOT_ALLOWED))
             .when(mockReviewApplication).addReview(1L, 100L, 8, null);
 
@@ -145,7 +145,7 @@ class ReviewControllerTest {
     void update_whenNotFound_shouldReturnBusinessError() throws Exception {
         // given
         stubValidToken();
-        doThrow(new com.anitrack.application.exception.AnitrackAppException(
+        doThrow(com.anitrack.application.exception.AnitrackAppException.build(
                 com.anitrack.application.exception.AppExceptionEnum.REVIEW_NOT_FOUND))
             .when(mockReviewApplication).updateReview(1L, 999L, 5, null);
 
@@ -203,7 +203,7 @@ class ReviewControllerTest {
     void detail_whenNotFound_shouldReturnBusinessError() throws Exception {
         // given
         stubValidToken();
-        doThrow(new com.anitrack.application.exception.AnitrackAppException(
+        doThrow(com.anitrack.application.exception.AnitrackAppException.build(
                 com.anitrack.application.exception.AppExceptionEnum.REVIEW_NOT_FOUND))
             .when(mockReviewApplication).getMyReview(1L, 999L);
 

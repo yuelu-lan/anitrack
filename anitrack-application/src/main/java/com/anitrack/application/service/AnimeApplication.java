@@ -26,13 +26,15 @@ public class AnimeApplication {
 
     @Transactional
     public List<AnimeBO> searchAnime(String keyword) {
+        log.info("调用Bangumi搜索, keyword={}", keyword);
         List<Anime> searchResults;
         try {
             searchResults = bangumiGateway.search(keyword);
         } catch (BangumiApiException e) {
             log.error("调用Bangumi搜索接口失败, keyword={}", keyword, e);
-            throw new AnitrackAppException(AppExceptionEnum.BANGUMI_SERVICE_UNAVAILABLE);
+            throw AnitrackAppException.build(AppExceptionEnum.BANGUMI_SERVICE_UNAVAILABLE);
         }
+        log.info("Bangumi搜索完成, keyword={}, count={}", keyword, searchResults.size());
         return searchResults.stream()
             .map(animeRepo::upsert)
             .map(animeBOConverter::anime2BO)
@@ -42,7 +44,7 @@ public class AnimeApplication {
     public AnimeBO getAnimeDetail(Long animeId) {
         Anime anime = animeRepo.getById(animeId);
         if (anime == null) {
-            throw new AnitrackAppException(AppExceptionEnum.ANIME_NOT_FOUND);
+            throw AnitrackAppException.build(AppExceptionEnum.ANIME_NOT_FOUND);
         }
         return animeBOConverter.anime2BO(anime);
     }

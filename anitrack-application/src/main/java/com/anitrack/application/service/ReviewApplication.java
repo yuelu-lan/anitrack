@@ -19,11 +19,13 @@ import com.anitrack.domain.review.service.ReviewDomainService;
 import com.anitrack.domain.user.model.User;
 import com.anitrack.domain.user.repo.UserRepo;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ReviewApplication {
@@ -41,12 +43,13 @@ public class ReviewApplication {
         try {
             review = reviewDomainService.addReview(userId, animeId, score, content);
         } catch (ReviewNotAllowedException e) {
-            throw new AnitrackAppException(AppExceptionEnum.REVIEW_NOT_ALLOWED);
+            throw AnitrackAppException.build(AppExceptionEnum.REVIEW_NOT_ALLOWED);
         } catch (ReviewAlreadyExistsException e) {
-            throw new AnitrackAppException(AppExceptionEnum.REVIEW_ALREADY_EXISTS);
+            throw AnitrackAppException.build(AppExceptionEnum.REVIEW_ALREADY_EXISTS);
         } catch (IllegalReviewScoreException e) {
-            throw new AnitrackAppException(AppExceptionEnum.ILLEGAL_REVIEW_SCORE);
+            throw AnitrackAppException.build(AppExceptionEnum.ILLEGAL_REVIEW_SCORE);
         }
+        log.info("评价新增, userId={}, animeId={}", userId, animeId);
         return reviewBOConverter.review2BO(review);
     }
 
@@ -54,21 +57,22 @@ public class ReviewApplication {
     public ReviewBO updateReview(Long userId, Long animeId, Integer score, String content) {
         Review review = reviewRepo.getByUserAndAnime(userId, animeId);
         if (review == null) {
-            throw new AnitrackAppException(AppExceptionEnum.REVIEW_NOT_FOUND);
+            throw AnitrackAppException.build(AppExceptionEnum.REVIEW_NOT_FOUND);
         }
         try {
             review.update(score, content);
         } catch (IllegalReviewScoreException e) {
-            throw new AnitrackAppException(AppExceptionEnum.ILLEGAL_REVIEW_SCORE);
+            throw AnitrackAppException.build(AppExceptionEnum.ILLEGAL_REVIEW_SCORE);
         }
         reviewRepo.update(review);
+        log.info("评价修改, userId={}, animeId={}", userId, animeId);
         return reviewBOConverter.review2BO(review);
     }
 
     public ReviewBO getMyReview(Long userId, Long animeId) {
         Review review = reviewRepo.getByUserAndAnime(userId, animeId);
         if (review == null) {
-            throw new AnitrackAppException(AppExceptionEnum.REVIEW_NOT_FOUND);
+            throw AnitrackAppException.build(AppExceptionEnum.REVIEW_NOT_FOUND);
         }
         return reviewBOConverter.review2BO(review);
     }
