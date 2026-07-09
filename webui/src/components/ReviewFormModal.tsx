@@ -35,12 +35,16 @@ export default function ReviewFormModal({
   }, [open, initialValues, form]);
 
   const handleOk = async () => {
-    const values = await form.validateFields();
-    const review = initialValues
-      ? await updateReview(animeId, values.score, values.content)
-      : await addReview(animeId, values.score, values.content);
-    message.success('评价已保存');
-    onSuccess(review);
+    try {
+      const values = await form.validateFields();
+      const review = initialValues
+        ? await updateReview(animeId, values.score, values.content)
+        : await addReview(animeId, values.score, values.content);
+      message.success('评价已保存');
+      onSuccess(review);
+    } catch {
+      return;
+    }
   };
 
   return (

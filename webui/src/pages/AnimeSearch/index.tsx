@@ -18,6 +18,8 @@ export default function AnimeSearchPage() {
     try {
       const data = await searchAnime(keyword.trim());
       setResults(data);
+    } catch {
+      setResults([]);
     } finally {
       setLoading(false);
       setSearched(true);

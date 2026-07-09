@@ -5,9 +5,13 @@ import type { RegisterParams } from '@/types/user';
 
 export default function RegisterPage() {
   const onFinish = async (values: RegisterParams) => {
-    await register(values);
-    message.success('注册成功，请登录');
-    history.push('/login');
+    try {
+      await register(values);
+      message.success('注册成功，请登录');
+      history.push('/login');
+    } catch {
+      return;
+    }
   };
 
   return (
