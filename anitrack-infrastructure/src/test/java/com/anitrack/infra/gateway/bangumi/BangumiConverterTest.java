@@ -61,4 +61,27 @@ class BangumiConverterTest {
         assertThat(anime.getInfobox()).hasSize(1);
         assertThat(anime.getCoverUrl()).isEqualTo("L");
     }
+
+    @Test
+    void toDomain_maps_infobox_value_as_list() {
+        BangumiSubjectDTO dto = new BangumiSubjectDTO();
+        dto.setId(2L);
+        dto.setType(2);
+        dto.setName("原名");
+
+        BangumiInfoboxDTO info = new BangumiInfoboxDTO();
+        info.setKey("别名");
+        info.setValue(List.of(Map.of("k", "英文名", "v", "Lelouch")));
+        dto.setInfobox(List.of(info));
+
+        Anime anime = converter.toDomain(dto);
+
+        assertThat(anime.getInfobox()).isNotNull().hasSize(1);
+        var infobox = anime.getInfobox().get(0);
+        assertThat(infobox.getKey()).isEqualTo("别名");
+        assertThat(infobox.getValueText()).isNull();
+        assertThat(infobox.getValueItems()).hasSize(1);
+        assertThat(infobox.getValueItems().get(0).getK()).isEqualTo("英文名");
+        assertThat(infobox.getValueItems().get(0).getV()).isEqualTo("Lelouch");
+    }
 }
