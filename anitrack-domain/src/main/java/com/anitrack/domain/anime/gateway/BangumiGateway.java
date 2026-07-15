@@ -5,6 +5,6 @@ import com.anitrack.domain.anime.model.Anime;
 import java.util.List;
 
 public interface BangumiGateway {
-
     List<Anime> search(String keyword);
+    Anime getById(Long bangumiId);
 }
