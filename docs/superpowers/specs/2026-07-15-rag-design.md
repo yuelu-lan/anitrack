@@ -115,19 +115,22 @@ rag-service/
 ├── Dockerfile
 ├── .env.example
 └── src/
-    ├── index.ts            # Fastify 启动，挂载路由
+    ├── index.ts            # Fastify 实例创建 + register 各 plugin
     ├── config.ts           # 读取环境变量，集中管理（baseURL、model 名等可切换）
+    ├── plugins/
+    │   ├── auth.ts         # onRequest hook，校验 X-Internal-Token
+    │   └── sse.ts          # SSE 流式响应工具（reply.raw.write 封装）
     ├── routes/
-    │   ├── ingest.ts       # POST /ingest
-    │   └── query.ts        # POST /query (SSE)
-    ├── rag/
-    │   ├── embeddings.ts   # 硅基流动 embedding 客户端（OpenAI 兼容封装）
-    │   ├── vectorStore.ts  # Chroma collection "anime_wiki" 初始化与复用
-    │   ├── retriever.ts    # top-k 检索封装
-    │   └── chain.ts        # 流式 RAG chain（prompt + 检索 + LLM 流式生成）
-    └── middleware/
-        └── auth.ts         # 校验 X-Internal-Token
+    │   ├── ingest.ts       # 导出 FastifyPlugin，注册 POST /ingest
+    │   └── query.ts        # 导出 FastifyPlugin，注册 POST /query (SSE)
+    └── rag/
+        ├── embeddings.ts   # 硅基流动 embedding 客户端（OpenAI 兼容封装）
+        ├── vectorStore.ts  # Chroma collection "anime_wiki" 初始化与复用
+        ├── retriever.ts    # top-k 检索封装
+        └── chain.ts        # 流式 RAG chain（prompt + 检索 + LLM 流式生成）
 ```
+
+目录贴合 Fastify 的 plugin/hook 心智模型：路由以 `FastifyPlugin` 形式 `register` 挂载，鉴权用 `onRequest` hook（而非 Express 式 middleware），SSE 响应通过 `reply.raw.write()` 并在 `plugins/sse.ts` 统一封装。
 
 ## 6. 接口契约
 
