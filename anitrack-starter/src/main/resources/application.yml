@@ -30,6 +30,10 @@ anitrack:
     user-agent: anitrack-practice/1.0 (https://github.com/yuelu-lan/anitrack)
     connect-timeout-ms: 3000
     read-timeout-ms: 5000
+  rag:
+    base-url: ${RAG_SERVICE_URL:http://localhost:8081}
+    internal-token: ${RAG_INTERNAL_TOKEN:change-me-internal-token}
+    default-top-k: 4
 
 server:
   port: 8080
