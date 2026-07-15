@@ -34,5 +34,32 @@ services:
       mysql:
         condition: service_healthy
 
+  chroma:
+    image: chromadb/chroma:latest
+    ports:
+      - "8000:8000"
+    volumes:
+      - chroma-data:/chroma/chroma
+
+  rag-service:
+    build: ./rag-service
+    ports:
+      - "8081:8081"
+    environment:
+      PORT: 8081
+      INTERNAL_TOKEN: ${RAG_INTERNAL_TOKEN:-change-me-internal-token}
+      CHROMA_URL: http://chroma:8000
+      COLLECTION_NAME: anime_wiki
+      LLM_BASE_URL: https://api.siliconflow.cn/v1
+      LLM_API_KEY: ${SILICONFLOW_API_KEY}
+      LLM_MODEL: Qwen/Qwen2.5-7B-Instruct
+      EMBEDDING_BASE_URL: https://api.siliconflow.cn/v1
+      EMBEDDING_API_KEY: ${SILICONFLOW_API_KEY}
+      EMBEDDING_MODEL: BAAI/bge-large-zh-v1.5
+      TOP_K: 4
+    depends_on:
+      - chroma
+
 volumes:
   anitrack-mysql-data:
+  chroma-data:
