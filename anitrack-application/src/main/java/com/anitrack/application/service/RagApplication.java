@@ -60,7 +60,7 @@ public class RagApplication {
                     .map(t -> t.getName() + "(" + t.getCount() + ")")
                     .collect(Collectors.joining(","))).append("\n");
         }
-        if (anime.getRating() != null && anime.getRating().getScore() != null) {
+        if (anime.getRating() != null && anime.getRating().getScore() != null && anime.getRating().getTotal() != null) {
             sb.append("评分：").append(anime.getRating().getScore())
               .append("（").append(anime.getRating().getTotal()).append("人）\n");
         }

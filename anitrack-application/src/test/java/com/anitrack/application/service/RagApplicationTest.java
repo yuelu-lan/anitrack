@@ -28,6 +28,24 @@ class RagApplicationTest {
     }
 
     @Test
+    void ingestAnimeWiki_skips_failed_fetch() {
+        BangumiGateway bangumi = mock(BangumiGateway.class);
+        RagGateway rag = mock(RagGateway.class);
+        when(bangumi.getById(1L)).thenThrow(new RuntimeException("bangumi down"));
+        when(bangumi.getById(2L)).thenReturn(animeFixture());
+        when(rag.ingest(anyList())).thenReturn(1);
+
+        RagApplication app = new RagApplication(bangumi, rag);
+        int n = app.ingestAnimeWiki(List.of(1L, 2L));
+
+        assertThat(n).isEqualTo(1);
+        verify(rag).ingest(anyList());
+        org.mockito.ArgumentCaptor<List> captor = org.mockito.ArgumentCaptor.forClass(List.class);
+        verify(rag).ingest(captor.capture());
+        assertThat(captor.getValue()).hasSize(1);
+    }
+
+    @Test
     void streamChat_delegates_to_gateway() {
         BangumiGateway bangumi = mock(BangumiGateway.class);
         RagGateway rag = mock(RagGateway.class);
