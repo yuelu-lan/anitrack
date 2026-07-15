@@ -56,14 +56,41 @@ rag-service (Node/TS + Fastify)
 
 ## 4. 数据流
 
+### 4.0 前置：领域模型扩展
+
+RAG 采集需要更完整的番剧百科字段，因此先做两处扩展（独立于 RAG 链路，是 RAG 的前置任务）：
+
+1. **`BangumiGateway` 新增 `getById`**：调用 Bangumi API `GET /v0/subjects/{subject_id}` 拉取单条目详情。现有 `search(keyword)` 保留。
+2. **`Anime` 领域模型全量对齐 Subject**：补齐 Bangumi Subject 的全部字段，新增值对象 `Rating`、`Collection`、`AnimeTag`、`AnimeImages`、`Infobox`。同步扩展 `AnimePO`、`AnimeMapper.xml`、建表迁移 `V5`、`BangumiConverter`。
+
+Anime 扩展后字段（对齐 Subject v0）：
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| id / bangumiId | Long | 内部主键 / Bangumi 条目 ID |
+| type | Integer | 条目类型（动画/书籍/游戏等） |
+| titleOriginal / titleCn | String | name / name_cn |
+| summary | String | 简介 |
+| nsfw / locked / series | Boolean | 标记位 |
+| airDate | String | date（YYYY-MM-DD） |
+| platform | String | 平台（TV/Web 等） |
+| coverUrl | String | images.large 作为封面 |
+| images | AnimeImages | 五种尺寸封面 |
+| eps / totalEpisodes / volumes | Integer | 话数 / 章节数 / 册数 |
+| metaTags | List<String> | 维基维护的 meta_tags |
+| tags | List<AnimeTag> | 用户标签（name + count） |
+| rating | Rating | 评分（score/rank/total/count 分布） |
+| collection | Collection | 收藏统计（wish/collect/doing/onHold/dropped） |
+| infobox | List<Infobox> | 维基信息框键值对 |
+
 ### 4.1 数据采集（离线，非用户请求路径）
 
 ```
 [定时任务 / 手动触发]
    ▼
-RagApplication.ingestAnimeWiki()
+RagApplication.ingestAnimeWiki(animeIds)
    ▼
-BangumiGateway 拉取番剧详情（简介、标签、制作组、放送期等）
+BangumiGateway.getById(bangumiId) 拉取单条目详情（summary/tags/rating/infobox 等全字段）
    ▼
 组装为 LangChain Document 结构
    （pageContent = 拼接的百科文本；metadata = {animeId, title, source:"bangumi"}）
