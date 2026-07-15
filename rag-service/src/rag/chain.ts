@@ -20,13 +20,13 @@ export async function* streamAnswer(
   question: string,
   retriever: (q: string, k: number) => Promise<Document[]>,
   topK: number,
-  model: BaseChatModel
+  model: BaseChatModel | (() => AsyncIterable<string>)
 ): AsyncGenerator<string> {
   const docs = await retriever(question, topK);
   const chain = RunnableSequence.from([
     { context: () => formatDocs(docs), question: new RunnablePassthrough() },
     prompt,
-    model,
+    model as BaseChatModel,
     new StringOutputParser(),
   ]);
   const stream = await chain.stream(question);
