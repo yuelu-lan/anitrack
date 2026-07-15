@@ -13,6 +13,7 @@ app.get("/health", async () => ({ status: "ok" }));
 
 app.decorate("streamAnswer", streamAnswer);
 app.decorate("retrieve", retrieve);
+app.decorate("defaultTopK", config.topK);
 app.decorate("createModel", () =>
   new ChatOpenAI({
     apiKey: config.llm.apiKey,

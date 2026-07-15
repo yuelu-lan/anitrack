@@ -12,7 +12,7 @@ export default async function queryRoute(app: FastifyInstance) {
       const streamAnswerFn = (app as any).streamAnswer;
       const retrieveFn = (app as any).retrieve;
       const model = (app as any).createModel();
-      for await (const token of streamAnswerFn(question, retrieveFn, topK ?? 4, model)) {
+      for await (const token of streamAnswerFn(question, retrieveFn, topK ?? (app as any).defaultTopK, model)) {
         sendSseChunk(reply, token);
       }
       endSse(reply);
