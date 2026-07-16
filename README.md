@@ -76,7 +76,7 @@ anitrack/
 | `.env` | ❌ | 根目录实际环境变量，**需从 `.env.example` 复制并填值** | docker-compose |
 | `rag-service/.env.example` | ✅ | rag-service 环境变量模板（端口/Chroma/LLM/embedding） | 复制为 `rag-service/.env` |
 | `rag-service/.env` | ❌ | rag-service 实际环境变量，**需从 `.env.example` 复制并填值** | rag-service（`dotenv`） |
-| `application-local.yml.example` | ✅ | Java 后端 local profile 模板（本地 MySQL 密码/JWT） | 复制为 `application-local.yml` |
+| `application-local.yml.example` | ✅ | Java 后端 local profile 模板（本地 MySQL 密码/JWT/RAG） | 复制为 `application-local.yml` |
 | `application-local.yml` | ❌ | Java 后端 local profile 实际配置，**需从 `.example` 复制并填值** | Spring Boot（`-Dspring.profiles.active=local`） |
 | `application-docker.yml` | ✅ | Java 后端 docker profile 配置，密码通过根 `.env` 注入 | Spring Boot（docker profile） |
 
@@ -95,29 +95,28 @@ anitrack/
 
 **环境要求**：JDK 17、Maven 3.6.3+、MySQL 8.x（本机或远程实例）
 
-**环境变量**：
+**环境变量**（命令行启动时传入，也可全部写在 `application-local.yml` 里）：
 
 | 变量 | 说明 |
 | --- | --- |
 | `DB_USERNAME` | MySQL 用户名 |
 | `DB_PASSWORD` | MySQL 密码 |
 | `JWT_SECRET` | JWT 签名密钥（Base64，至少 32 字节） |
-| `RAG_SERVICE_URL` | rag-service 地址（默认 `http://localhost:8081`） |
-| `RAG_INTERNAL_TOKEN` | Java ↔ rag-service 共享密钥 |
-| `SILICONFLOW_API_KEY` | 硅基流动 API key（LLM + embedding） |
+
+> RAG 相关配置（`RAG_SERVICE_URL` / `RAG_INTERNAL_TOKEN`）不读环境变量，写在 `application-local.yml` 的 `anitrack.rag` 段——`RAG_INTERNAL_TOKEN` 需与 `rag-service/.env` 的 `INTERNAL_TOKEN` 一致，否则 Java→rag-service 鉴权 401。
 
 **启动 rag-service**（RAG 问答依赖，需先于后端启动）：
 
 ```bash
 cd rag-service
-cp .env.example .env   # 填入 SILICONFLOW_API_KEY 与 RAG_INTERNAL_TOKEN
+cp .env.example .env   # 填入 LLM_API_KEY/EMBEDDING_API_KEY 与 INTERNAL_TOKEN
 npm install --legacy-peer-deps
 npm run dev            # 默认监听 8081
 ```
 
 Chroma 向量库默认连接 `http://localhost:8000`，可用 `docker compose up chroma` 或 `pip install chromadb && chroma run --port 8000` 启动。
 
-**配置文件**：复制 `anitrack-starter/src/main/resources/application-local.yml.example` 为 `application-local.yml`，填入本地数据库密码与 JWT 密钥。
+**配置文件**：复制 `anitrack-starter/src/main/resources/application-local.yml.example` 为 `application-local.yml`，填入本地数据库密码、JWT 密钥与 RAG 共享密钥。
 
 **启动**：
 
