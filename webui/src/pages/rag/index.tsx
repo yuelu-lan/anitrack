@@ -31,7 +31,7 @@ export default function RagPage() {
   const { messages, sendMessage, status, error } = useChat({ transport });
 
   const onSubmit = () => {
-    if (!input.trim()) return;
+    if (!input.trim() || status === 'submitted' || status === 'streaming') return;
     sendMessage({ text: input });
     setInput('');
   };
@@ -46,7 +46,7 @@ export default function RagPage() {
             <Text>{m.parts.filter((p) => p.type === 'text').map((p) => p.text).join('')}</Text>
           </div>
         ))}
-        {status === 'streaming' && <Spin />}
+        {status === 'submitted' && <Spin tip="思考中…" />}
         {status === 'error' && (
           <Alert
             type="error"
@@ -60,6 +60,11 @@ export default function RagPage() {
         rows={2}
         value={input}
         onChange={(e) => setInput(e.target.value)}
+        onPressEnter={(e) => {
+          if (e.shiftKey) return;
+          e.preventDefault();
+          onSubmit();
+        }}
         placeholder="问点关于番剧的……"
       />
       <Button
