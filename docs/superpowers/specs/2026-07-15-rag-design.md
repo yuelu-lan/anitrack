@@ -180,13 +180,12 @@ Response: 200 { ingested: number }
 ```
 Header: X-Internal-Token: <共享密钥>
 Body: { question: string, topK?: number }
-Response: text/event-stream
-  data: {"token":"某"}\n
-  data: {"token":"番"}\n
-  ...
-  data: [DONE]\n
-  （出错）data: {"error":"..."}\n
+Response: text/plain（纯文本流，逐 token 输出，匹配前端 ai-sdk TextStreamChatTransport）
+  你好番剧...
+  （出错）[ERROR] ...
 ```
+
+说明：采用纯文本流而非 `data:` SSE 帧，是为了直接对接前端 ai-sdk 的 `TextStreamChatTransport`（该 transport 解析纯文本流）。Java 后端透传时保持同样的纯文本格式。
 
 ## 7. 模型与库可配置
 

@@ -1,6 +1,6 @@
 import { useChat } from '@ai-sdk/react';
 import { TextStreamChatTransport } from 'ai';
-import { Input, Button, Typography, Spin } from 'antd';
+import { Input, Button, Typography, Spin, Alert } from 'antd';
 import { useMemo, useState } from 'react';
 
 const { Text } = Typography;
@@ -28,7 +28,7 @@ export default function RagPage() {
     [],
   );
 
-  const { messages, sendMessage, status } = useChat({ transport });
+  const { messages, sendMessage, status, error } = useChat({ transport });
 
   const onSubmit = () => {
     if (!input.trim()) return;
@@ -47,6 +47,14 @@ export default function RagPage() {
           </div>
         ))}
         {status === 'streaming' && <Spin />}
+        {status === 'error' && (
+          <Alert
+            type="error"
+            message="回答生成失败"
+            description={error?.message ?? '请稍后重试'}
+            style={{ marginTop: 8 }}
+          />
+        )}
       </div>
       <Input.TextArea
         rows={2}

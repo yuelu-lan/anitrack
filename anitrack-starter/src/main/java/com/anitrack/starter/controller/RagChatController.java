@@ -37,6 +37,11 @@ public class RagChatController {
                         });
             } catch (Exception e) {
                 log.error("RAG 流式透传失败", e);
+                try {
+                    out.write("[ERROR] 回答生成失败，请稍后重试".getBytes(StandardCharsets.UTF_8));
+                    out.flush();
+                } catch (IOException ignored) {
+                }
             }
         };
     }
