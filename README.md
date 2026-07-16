@@ -93,37 +93,51 @@ anitrack/
 
 ### 方式一：本地启动（IDEA）
 
-**环境要求**：JDK 17、Maven 3.6.3+、MySQL 8.x（本机或远程实例）
+**环境要求**：JDK 17、Maven 3.6.3+、MySQL 8.x、Node 20+（rag-service）
 
-**环境变量**（命令行启动时传入，也可全部写在 `application-local.yml` 里）：
+本地启动涉及两份配置文件，各自独立填值：
 
-| 变量 | 说明 |
+**① Java 后端** —— 复制 `anitrack-starter/src/main/resources/application-local.yml.example` 为 `application-local.yml`，填入：
+
+| 配置项（`application-local.yml`） | 说明 |
 | --- | --- |
-| `DB_USERNAME` | MySQL 用户名 |
-| `DB_PASSWORD` | MySQL 密码 |
-| `JWT_SECRET` | JWT 签名密钥（Base64，至少 32 字节） |
+| `spring.datasource.username` / `password` | 本地 MySQL 账号密码 |
+| `anitrack.jwt.secret` | JWT 签名密钥（Base64，至少 32 字节） |
+| `anitrack.rag.internal-token` | Java ↔ rag-service 共享密钥，**需与下方 rag-service 的 `INTERNAL_TOKEN` 一致**，否则鉴权 401 |
+| `anitrack.rag.base-url` | rag-service 地址（默认 `http://localhost:8081`） |
 
-> RAG 相关配置（`RAG_SERVICE_URL` / `RAG_INTERNAL_TOKEN`）不读环境变量，写在 `application-local.yml` 的 `anitrack.rag` 段——`RAG_INTERNAL_TOKEN` 需与 `rag-service/.env` 的 `INTERNAL_TOKEN` 一致，否则 Java→rag-service 鉴权 401。
+> local profile 不读根 `.env`，DB/JWT/RAG 全部写在 `application-local.yml` 里。`DB_USERNAME`/`DB_PASSWORD`/`JWT_SECRET` 环境变量仅在命令行启动时作为 `application.yml` 占位符的来源，IDEA 启动则直接读 yml。
 
-**启动 rag-service**（RAG 问答依赖，需先于后端启动）：
+**② rag-service** —— 复制 `rag-service/.env.example` 为 `rag-service/.env`，填入：
+
+| 变量（`rag-service/.env`） | 说明 |
+| --- | --- |
+| `INTERNAL_TOKEN` | 与 Java 侧 `anitrack.rag.internal-token` 一致 |
+| `LLM_API_KEY` / `EMBEDDING_API_KEY` | 硅基流动 API key（LLM + embedding，通常同一个） |
+| `LLM_BASE_URL` / `EMBEDDING_BASE_URL` | 模型接口地址（默认硅基流动） |
+| `LLM_MODEL` / `EMBEDDING_MODEL` | 模型名（默认 `Qwen/Qwen2.5-7B-Instruct` / `BAAI/bge-large-zh-v1.5`） |
+| `CHROMA_URL` | Chroma 地址（默认 `http://localhost:8000`） |
+
+**启动 Chroma**（向量库，先于 rag-service）：
+
+```bash
+pip install chromadb && chroma run --port 8000
+# 或 docker compose up chroma
+```
+
+**启动 rag-service**：
 
 ```bash
 cd rag-service
-cp .env.example .env   # 填入 LLM_API_KEY/EMBEDDING_API_KEY 与 INTERNAL_TOKEN
 npm install --legacy-peer-deps
 npm run dev            # 默认监听 8081
 ```
 
-Chroma 向量库默认连接 `http://localhost:8000`，可用 `docker compose up chroma` 或 `pip install chromadb && chroma run --port 8000` 启动。
-
-**配置文件**：复制 `anitrack-starter/src/main/resources/application-local.yml.example` 为 `application-local.yml`，填入本地数据库密码、JWT 密钥与 RAG 共享密钥。
-
-**启动**：
+**启动 Java 后端**：
 
 ```bash
 mvn clean install
-DB_USERNAME=xxx DB_PASSWORD=xxx JWT_SECRET=xxx \
-  mvn -pl anitrack-starter spring-boot:run -Dspring-boot.run.profiles=local
+mvn -pl anitrack-starter spring-boot:run -Dspring-boot.run.profiles=local
 ```
 
 或在 IDEA 启动配置中设置 `Active profiles: local`。
@@ -132,17 +146,28 @@ DB_USERNAME=xxx DB_PASSWORD=xxx JWT_SECRET=xxx \
 
 **环境要求**：Docker（含 Compose v2）
 
-**步骤**：
+只需准备根目录一份 `.env`，docker-compose 会把变量注入 Java 后端（docker profile）和 rag-service 容器，无需手动准备 `application-local.yml` 或 `rag-service/.env`。
+
+复制 `.env.example` 为 `.env`，填入：
+
+| 变量（根 `.env`） | 说明 | 谁读取 |
+| --- | --- | --- |
+| `MYSQL_ROOT_PASSWORD` | MySQL root 密码 | MySQL 容器 |
+| `MYSQL_DATABASE` | 数据库名（默认 `anitrack`） | MySQL 容器 |
+| `DB_USERNAME` / `DB_PASSWORD` | 后端连接 MySQL 的账号密码 | Java 后端（`application-docker.yml`） |
+| `JWT_SECRET` | JWT 签名密钥 | Java 后端 |
+| `RAG_INTERNAL_TOKEN` | Java ↔ rag-service 共享密钥（两侧自动对齐） | Java 后端 + rag-service |
+| `SILICONFLOW_API_KEY` | 硅基流动 API key | rag-service（映射为 `LLM_API_KEY`/`EMBEDDING_API_KEY`） |
+
+**启动**：
 
 ```bash
 cp .env.example .env
-# 编辑 .env，设置 MySQL 密码与 JWT_SECRET
+# 编辑 .env，填入上表各项
 docker compose up --build
 ```
 
-`docker-compose.yml` 会启动 MySQL 8（带数据卷持久化）+ Chroma 向量库 + rag-service + 后端应用，应用容器自动激活 `docker` profile。需在 `.env` 中填入 `SILICONFLOW_API_KEY` 与 `RAG_INTERNAL_TOKEN`（rag-service 运行所需）。
-
-**配置文件**：`application-docker.yml` 已提交，密码通过 `.env` 注入环境变量，无需手动修改。
+`docker-compose.yml` 会启动 MySQL 8（带数据卷持久化）+ Chroma 向量库 + rag-service + 后端应用，应用容器自动激活 `docker` profile。
 
 ### 启动说明
 
