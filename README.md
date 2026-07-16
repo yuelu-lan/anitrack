@@ -8,7 +8,8 @@
 - Phase 1a：番剧目录（Bangumi ACL）
 - Phase 1b：追番核心（状态机/进度）
 - Phase 2：评价（评分/评论）
-- 前端：`webui/`（UmiJS Max + Ant Design，覆盖全部 14 个接口的操作界面）
+- RAG：番剧百科问答（独立 rag-service + Chroma 向量库，前端 ai-sdk 流式问答）
+- 前端：`webui/`（UmiJS Max + Ant Design，覆盖追番/评价/RAG 问答操作界面）
 
 ## 技术栈
 
@@ -26,6 +27,16 @@
 | 外部数据源 | Bangumi API（番剧元数据，通过防腐层接入） |
 | 单元测试 | JUnit5 + Mockito + AssertJ |
 
+RAG 引擎（`rag-service/`，独立 Node/TS 子项目）：
+
+| 分类 | 选型 |
+| --- | --- |
+| 语言/框架 | TypeScript + Fastify 5 |
+| RAG 框架 | LangChain.ts（`@langchain/openai` / `@langchain/community`） |
+| 向量库 | Chroma（自部署） |
+| LLM/embedding | 硅基流动（SiliconFlow，OpenAI 兼容接口），可切换国内模型 |
+| 服务间鉴权 | 共享密钥（`X-Internal-Token` header） |
+
 前端（`webui/`）：
 
 | 分类 | 选型 |
@@ -34,6 +45,7 @@
 | UI 组件库 | Ant Design 5 |
 | 语言 | TypeScript |
 | 包管理 | npm |
+| AI 流式 | Vercel ai-sdk（`useChat` + `TextStreamChatTransport`） |
 
 ## 模块结构
 
@@ -44,11 +56,13 @@ anitrack/
 ├── anitrack-domain/           # 领域核心层：聚合根/领域服务/仓储接口
 ├── anitrack-infrastructure/   # 基础设施层：仓储实现/网关/持久化
 ├── anitrack-common/           # 公共组件层：dto/enums/utils
+├── rag-service/               # RAG 引擎：独立 Node/TS 工程，Fastify + LangChain.ts + Chroma
 └── webui/                     # 前端：独立 npm 工程，UmiJS Max + Ant Design
 ```
 
 - 后端模块依赖方向：`starter → application → domain`，`infrastructure → domain`
 - `webui/` 是独立的前端工程，不属于 Maven 多模块，通过 dev server 代理调用后端 `/api`
+- `rag-service/` 是独立的 RAG 引擎工程，由 Java 后端经共享密钥调用（`/ingest` 入库、`/query` 流式问答），不直接暴露给前端
 
 详细规范见 [`docs/rules/anitrack-project-rules.md`](docs/rules/anitrack-project-rules.md)。
 
@@ -67,6 +81,20 @@ anitrack/
 | `DB_USERNAME` | MySQL 用户名 |
 | `DB_PASSWORD` | MySQL 密码 |
 | `JWT_SECRET` | JWT 签名密钥（Base64，至少 32 字节） |
+| `RAG_SERVICE_URL` | rag-service 地址（默认 `http://localhost:8081`） |
+| `RAG_INTERNAL_TOKEN` | Java ↔ rag-service 共享密钥 |
+| `SILICONFLOW_API_KEY` | 硅基流动 API key（LLM + embedding） |
+
+**启动 rag-service**（RAG 问答依赖，需先于后端启动）：
+
+```bash
+cd rag-service
+cp .env.example .env   # 填入 SILICONFLOW_API_KEY 与 RAG_INTERNAL_TOKEN
+npm install --legacy-peer-deps
+npm run dev            # 默认监听 8081
+```
+
+Chroma 向量库默认连接 `http://localhost:8000`，可用 `docker compose up chroma` 或 `pip install chromadb && chroma run --port 8000` 启动。
 
 **配置文件**：复制 `anitrack-starter/src/main/resources/application-local.yml.example` 为 `application-local.yml`，填入本地数据库密码与 JWT 密钥。
 
@@ -92,13 +120,13 @@ cp .env.example .env
 docker compose up --build
 ```
 
-`docker-compose.yml` 会启动 MySQL 8（带数据卷持久化）+ 后端应用，应用容器自动激活 `docker` profile。
+`docker-compose.yml` 会启动 MySQL 8（带数据卷持久化）+ Chroma 向量库 + rag-service + 后端应用，应用容器自动激活 `docker` profile。需在 `.env` 中填入 `SILICONFLOW_API_KEY` 与 `RAG_INTERNAL_TOKEN`（rag-service 运行所需）。
 
 **配置文件**：`application-docker.yml` 已提交，密码通过 `.env` 注入环境变量，无需手动修改。
 
 ### 启动说明
 
-- 服务默认监听 `8080` 端口，数据库表结构由 Flyway 自动创建（`db/migration/V1~V4`）
+- 服务默认监听 `8080` 端口，数据库表结构由 Flyway 自动创建（`db/migration/V1~V5`）
 - `local` / `docker` 两个 profile 会额外加载 `db/migration-dev/R__seed_demo_data.sql`，灌入演示数据（2 用户、4 番剧、5 追番、3 评价，覆盖全部追番状态）。演示账号：`alice` / `bob`，密码均为 `password123`
 - 不激活任何 profile（生产部署）时，仅执行建表脚本，不灌演示数据
 - MySQL 数据持久化在 `anitrack-mysql-data` 卷，`docker compose down` 保留数据，`docker compose down -v` 删除数据重新初始化
@@ -133,5 +161,7 @@ npm run dev
 | POST | `/api/review/detail` | 查看我对某番剧的评价详情 |
 | POST | `/api/review/list_by_anime` | 查询某番剧的评价列表（分页，含评论人昵称/头像） |
 | POST | `/api/review/my_list` | 查询我的评价列表（含番剧标题/封面） |
+| POST | `/api/rag/ingest` | 触发番剧百科采集入库（参数 `bangumiIds`，拉 Bangumi 详情写入 Chroma） |
+| POST | `/api/rag/chat` | 番剧百科问答（流式返回，`text/plain` 逐 token 输出） |
 
 除注册/登录外，其余接口均需携带 `Authorization: Bearer <token>` 请求头。
