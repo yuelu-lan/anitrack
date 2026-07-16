@@ -20,6 +20,7 @@ app.decorate("createModel", () =>
     model: config.llm.model,
     configuration: { baseURL: config.llm.baseURL },
     streaming: true,
+    streamUsage: false,
   }),
 );
 
