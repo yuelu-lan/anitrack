@@ -62,7 +62,7 @@ public class BangumiGatewayImpl implements BangumiGateway {
     @Override
     public List<Anime> listAnimeByYearRating(int year, double minRating) {
         List<Anime> all = new ArrayList<>();
-        int limit = 20;
+        int limit = 50;
         int offset = 0;
         try {
             while (true) {
