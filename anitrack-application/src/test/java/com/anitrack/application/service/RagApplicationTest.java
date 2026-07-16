@@ -57,6 +57,21 @@ class RagApplicationTest {
         assertThat(tokens).containsExactly("你", "好");
     }
 
+    @Test
+    void ingestByCriteria_uses_gateway_filter_and_ingests() {
+        BangumiGateway bangumi = mock(BangumiGateway.class);
+        RagGateway rag = mock(RagGateway.class);
+        when(bangumi.listAnimeByYearRating(2026, 7.0)).thenReturn(List.of(animeFixture()));
+        when(rag.ingest(anyList())).thenReturn(1);
+
+        RagApplication app = new RagApplication(bangumi, rag);
+        int n = app.ingestByCriteria(2026, 7.0);
+
+        assertThat(n).isEqualTo(1);
+        verify(bangumi).listAnimeByYearRating(2026, 7.0);
+        verify(rag).ingest(anyList());
+    }
+
     private Anime animeFixture() {
         return Anime.fromBangumi(1L, 2, "原名", "中文名", "简介", false, false, false,
                 LocalDate.of(2024, 4, 1), "TV", null, 12, 12, 0,

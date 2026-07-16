@@ -35,6 +35,16 @@ public class RagApplication {
         return ragGateway.ingest(docs);
     }
 
+    public int ingestByCriteria(int year, double minRating) {
+        List<Anime> animes = bangumiGateway.listAnimeByYearRating(year, minRating);
+        if (animes.isEmpty()) {
+            log.warn("未找到符合条件番媒 year={} minRating={}", year, minRating);
+            return 0;
+        }
+        List<RagDocument> docs = animes.stream().map(this::toDocument).toList();
+        return ragGateway.ingest(docs);
+    }
+
     public Stream<String> streamChat(RagQuery query) {
         return ragGateway.streamQuery(query);
     }

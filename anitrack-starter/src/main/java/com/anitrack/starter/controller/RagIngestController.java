@@ -20,4 +20,9 @@ public class RagIngestController {
     public ResponseResult<Integer> ingest(@RequestParam List<Long> bangumiIds) {
         return ResponseResult.success(ragApplication.ingestAnimeWiki(bangumiIds));
     }
+
+    @PostMapping("/ingest_by_criteria")
+    public ResponseResult<Integer> ingestByCriteria(@RequestParam int year, @RequestParam double minRating) {
+        return ResponseResult.success(ragApplication.ingestByCriteria(year, minRating));
+    }
 }

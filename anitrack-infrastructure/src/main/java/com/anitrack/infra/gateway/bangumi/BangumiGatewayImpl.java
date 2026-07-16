@@ -13,6 +13,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -56,5 +57,40 @@ public class BangumiGatewayImpl implements BangumiGateway {
         } catch (RestClientException e) {
             throw new BangumiApiException("获取 Bangumi 条目详情失败: " + bangumiId, e);
         }
+    }
+
+    @Override
+    public List<Anime> listAnimeByYearRating(int year, double minRating) {
+        List<Anime> all = new ArrayList<>();
+        int limit = 50;
+        int offset = 0;
+        try {
+            while (true) {
+                int currentOffset = offset;
+                BangumiSearchResponseDTO resp = bangumiRestClient.get()
+                        .uri(uriBuilder -> uriBuilder.path("/v0/subjects")
+                                .queryParam("type", 2)
+                                .queryParam("year", year)
+                                .queryParam("sort", "rank")
+                                .queryParam("limit", limit)
+                                .queryParam("offset", currentOffset)
+                                .build())
+                        .retrieve()
+                        .body(BangumiSearchResponseDTO.class);
+                if (resp == null || resp.getData() == null || resp.getData().isEmpty()) {
+                    break;
+                }
+                all.addAll(resp.getData().stream().map(bangumiConverter::toDomain).toList());
+                if (resp.getData().size() < limit) {
+                    break;
+                }
+                offset += limit;
+            }
+        } catch (RestClientException e) {
+            throw new BangumiApiException("调用 Bangumi 浏览接口失败, year=" + year, e);
+        }
+        return all.stream()
+                .filter(a -> a.getRating() != null && a.getRating().getScore() != null && a.getRating().getScore() >= minRating)
+                .toList();
     }
 }
