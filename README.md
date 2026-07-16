@@ -66,6 +66,27 @@ anitrack/
 
 详细规范见 [`docs/rules/anitrack-project-rules.md`](docs/rules/anitrack-project-rules.md)。
 
+## 环境配置文件
+
+项目涉及多套运行环境（Java 后端、rag-service、前端），配置文件分散在几处，说明如下。所有 `.env` 和 `application-local.yml` 均已被 `.gitignore` 忽略，**不会提交**；提交的是对应的 `.example` 模板。
+
+| 文件 | 提交 | 作用 | 谁读取 |
+| --- | --- | --- | --- |
+| `.env.example` | ✅ | 根目录环境变量模板（MySQL/JWT/RAG 相关） | 复制为 `.env` 供 docker-compose 读取 |
+| `.env` | ❌ | 根目录实际环境变量，**需从 `.env.example` 复制并填值** | docker-compose |
+| `rag-service/.env.example` | ✅ | rag-service 环境变量模板（端口/Chroma/LLM/embedding） | 复制为 `rag-service/.env` |
+| `rag-service/.env` | ❌ | rag-service 实际环境变量，**需从 `.env.example` 复制并填值** | rag-service（`dotenv`） |
+| `application-local.yml.example` | ✅ | Java 后端 local profile 模板（本地 MySQL 密码/JWT） | 复制为 `application-local.yml` |
+| `application-local.yml` | ❌ | Java 后端 local profile 实际配置，**需从 `.example` 复制并填值** | Spring Boot（`-Dspring.profiles.active=local`） |
+| `application-docker.yml` | ✅ | Java 后端 docker profile 配置，密码通过根 `.env` 注入 | Spring Boot（docker profile） |
+
+**关键点**：
+
+- **本地启动（IDEA）**：需准备 `application-local.yml`（Java 侧）+ `rag-service/.env`（rag-service 侧），两者独立。Java 侧 local profile 不读根 `.env`，密码写在 `application-local.yml` 里。
+- **Docker 启动**：只需准备根 `.env`——docker-compose 把它注入 Java 后端（docker profile 读环境变量）和 rag-service 容器（env 映射）。Java 后端的 `application-docker.yml` 用 `${DB_PASSWORD}` 等占位符读取。
+- **共享密钥对齐**：Java ↔ rag-service 的共享密钥必须一致——根 `.env` 的 `RAG_INTERNAL_TOKEN` 与 `rag-service/.env` 的 `INTERNAL_TOKEN` 要填同一个值。Docker 启动时 docker-compose 会用根 `.env` 的值统一注入两侧，无需手动对齐。
+- **密钥安全**：`.env` / `application-local.yml` 含真实密钥，已被 gitignore，切勿提交；`.env.example` 仅为占位模板。
+
 ## 快速开始
 
 支持两种启动方式：**本地启动**（IDEA 开发）和 **Docker 启动**（一键起后端 + MySQL）。
