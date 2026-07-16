@@ -47,7 +47,7 @@ services:
       - "8081:8081"
     environment:
       PORT: 8081
-      INTERNAL_TOKEN: ${RAG_INTERNAL_TOKEN:-change-me-internal-token}
+      INTERNAL_TOKEN: ${RAG_INTERNAL_TOKEN}
       CHROMA_URL: http://chroma:8000
       COLLECTION_NAME: anime_wiki
       LLM_BASE_URL: https://api.siliconflow.cn/v1
