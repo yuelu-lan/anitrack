@@ -7,6 +7,7 @@ import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.*;
 import org.springframework.web.client.RestClient;
 import java.io.IOException;
+import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class BangumiGatewayImplTest {
@@ -57,5 +58,27 @@ class BangumiGatewayImplTest {
         server.enqueue(new MockResponse().setResponseCode(404));
         Anime anime = gateway.getById(999L);
         assertThat(anime).isNull();
+    }
+
+    @Test
+    void listAnimeByYearRating_filters_by_rating() throws InterruptedException {
+        server.enqueue(new MockResponse()
+                .setHeader("Content-Type", "application/json")
+                .setBody("""
+                    {"total":2,"limit":20,"offset":0,"data":[
+                      {"id":1,"type":2,"name":"A","name_cn":"A中","summary":"","date":"2026-01-01","rating":{"score":8.5,"rank":1,"total":10,"count":{}}},
+                      {"id":2,"type":2,"name":"B","name_cn":"B中","summary":"","date":"2026-02-01","rating":{"score":5.0,"rank":100,"total":5,"count":{}}}
+                    ]}
+                    """));
+
+        List<Anime> result = gateway.listAnimeByYearRating(2026, 7.0);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getBangumiId()).isEqualTo(1L);
+        assertThat(result.get(0).getRating().getScore()).isEqualTo(8.5);
+
+        String path = server.takeRequest().getPath();
+        assertThat(path).startsWith("/v0/subjects");
+        assertThat(path).contains("type=2").contains("year=2026").contains("sort=rank");
     }
 }
