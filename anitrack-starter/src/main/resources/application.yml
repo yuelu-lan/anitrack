@@ -32,7 +32,7 @@ anitrack:
     read-timeout-ms: 5000
   rag:
     base-url: ${RAG_SERVICE_URL:http://localhost:8081}
-    internal-token: ${RAG_INTERNAL_TOKEN:change-me-internal-token}
+    internal-token: ${RAG_INTERNAL_TOKEN}
     default-top-k: 4
 
 server:

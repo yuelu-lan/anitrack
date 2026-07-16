@@ -8,3 +8,7 @@ spring:
 anitrack:
   jwt:
     secret: your-jwt-secret-base64-at-least-32-bytes
+  rag:
+    # 需与 rag-service/.env 的 INTERNAL_TOKEN 一致，否则 Java→rag-service 鉴权 401
+    internal-token: your-rag-internal-token
+    base-url: http://localhost:8081
