@@ -6,10 +6,10 @@ import com.anitrack.domain.rag.model.RagQuery;
 import com.anitrack.infra.config.RagProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -73,10 +73,10 @@ public class RagGatewayImpl implements RagGateway {
         try {
             HttpResponse<InputStream> resp = httpClient.send(req,
                     HttpResponse.BodyHandlers.ofInputStream());
-            BufferedReaderLines lines = new BufferedReaderLines(resp.body());
+            CharChunkIterator chunks = new CharChunkIterator(resp.body());
             return StreamSupport.stream(
-                    Spliterators.spliteratorUnknownSize(lines, 0), false)
-                    .onClose(lines::close);
+                    Spliterators.spliteratorUnknownSize(chunks, 0), false)
+                    .onClose(chunks::close);
         } catch (Exception e) {
             return Stream.of("[ERROR] rag-service 不可达: " + e.getMessage());
         }
@@ -84,29 +84,36 @@ public class RagGatewayImpl implements RagGateway {
 
     private record IngestResponse(int ingested) {}
 
-    private static class BufferedReaderLines implements Iterator<String>, AutoCloseable {
-        private final BufferedReader reader;
+    private static class CharChunkIterator implements Iterator<String>, AutoCloseable {
+        private static final int CHUNK_SIZE = 512;
+        private final Reader reader;
+        private final char[] buf = new char[CHUNK_SIZE];
         private String next;
 
-        BufferedReaderLines(InputStream in) {
-            reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
+        CharChunkIterator(InputStream in) {
+            reader = new InputStreamReader(in, StandardCharsets.UTF_8);
         }
 
         @Override
         public boolean hasNext() {
             try {
-                next = reader.readLine();
+                int n = reader.read(buf);
+                if (n < 0) {
+                    next = null;
+                    return false;
+                }
+                next = new String(buf, 0, n);
             } catch (IOException e) {
                 log.error("rag-service 流读取失败", e);
                 next = null;
                 return false;
             }
-            return next != null;
+            return true;
         }
 
         @Override
         public String next() {
-            return next + "\n";
+            return next;
         }
 
         @Override

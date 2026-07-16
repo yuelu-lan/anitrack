@@ -51,6 +51,6 @@ class RagGatewayImplTest {
                 .setBody("你好世界"));
         String result = gateway.streamQuery(RagQuery.of("你好", null))
                 .collect(Collectors.joining());
-        assertThat(result).isEqualTo("你好世界\n");
+        assertThat(result).isEqualTo("你好世界");
     }
 }
