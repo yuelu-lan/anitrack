@@ -7,57 +7,94 @@
     <resultMap id="BaseResultMap" type="com.anitrack.infra.dal.po.AnimePO">
         <id column="id" property="id"/>
         <result column="bangumi_id" property="bangumiId"/>
+        <result column="type" property="type"/>
         <result column="title_cn" property="titleCn"/>
         <result column="title_original" property="titleOriginal"/>
-        <result column="cover_url" property="coverUrl"/>
-        <result column="total_episodes" property="totalEpisodes"/>
-        <result column="air_date" property="airDate"/>
         <result column="summary" property="summary"/>
+        <result column="nsfw" property="nsfw"/>
+        <result column="locked" property="locked"/>
+        <result column="series" property="series"/>
+        <result column="air_date" property="airDate"/>
+        <result column="platform" property="platform"/>
+        <result column="cover_url" property="coverUrl"/>
+        <result column="images" property="images"
+                typeHandler="com.anitrack.infra.dal.handler.AnimeImagesTypeHandler"/>
+        <result column="eps" property="eps"/>
+        <result column="total_episodes" property="totalEpisodes"/>
+        <result column="volumes" property="volumes"/>
+        <result column="meta_tags" property="metaTags"
+                typeHandler="com.anitrack.infra.dal.handler.StringListTypeHandler"/>
+        <result column="tags" property="tags"
+                typeHandler="com.anitrack.infra.dal.handler.AnimeTagListTypeHandler"/>
+        <result column="rating" property="rating"
+                typeHandler="com.anitrack.infra.dal.handler.RatingTypeHandler"/>
+        <result column="collection" property="collection"
+                typeHandler="com.anitrack.infra.dal.handler.CollectionTypeHandler"/>
+        <result column="infobox" property="infobox"
+                typeHandler="com.anitrack.infra.dal.handler.InfoboxListTypeHandler"/>
         <result column="create_time" property="createTime"/>
         <result column="update_time" property="updateTime"/>
     </resultMap>
 
     <sql id="Base_Column_List">
-        id, bangumi_id, title_cn, title_original, cover_url, total_episodes, air_date, summary, create_time, update_time
+        id, bangumi_id, type, title_cn, title_original, summary, nsfw, locked, series,
+        air_date, platform, cover_url, images, eps, total_episodes, volumes, meta_tags,
+        tags, rating, collection, infobox, create_time, update_time
     </sql>
 
     <select id="selectById" resultMap="BaseResultMap">
-        SELECT
-        <include refid="Base_Column_List"/>
-        FROM t_anime
-        WHERE id = #{id}
+        SELECT <include refid="Base_Column_List"/>
+        FROM t_anime WHERE id = #{id}
     </select>
 
     <select id="selectByBangumiId" resultMap="BaseResultMap">
-        SELECT
-        <include refid="Base_Column_List"/>
-        FROM t_anime
-        WHERE bangumi_id = #{bangumiId}
+        SELECT <include refid="Base_Column_List"/>
+        FROM t_anime WHERE bangumi_id = #{bangumiId}
     </select>
 
     <select id="selectByIds" resultMap="BaseResultMap">
-        SELECT
-        <include refid="Base_Column_List"/>
-        FROM t_anime
-        WHERE id IN
+        SELECT <include refid="Base_Column_List"/>
+        FROM t_anime WHERE id IN
         <foreach collection="ids" item="id" open="(" separator="," close=")">
             #{id}
         </foreach>
     </select>
 
     <insert id="insert" parameterType="com.anitrack.infra.dal.po.AnimePO" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO t_anime (bangumi_id, title_cn, title_original, cover_url, total_episodes, air_date, summary)
-        VALUES (#{bangumiId}, #{titleCn}, #{titleOriginal}, #{coverUrl}, #{totalEpisodes}, #{airDate}, #{summary})
+        INSERT INTO t_anime (bangumi_id, type, title_cn, title_original, summary, nsfw, locked, series,
+            air_date, platform, cover_url, images, eps, total_episodes, volumes, meta_tags, tags, rating, collection, infobox)
+        VALUES (#{bangumiId}, #{type}, #{titleCn}, #{titleOriginal}, #{summary}, #{nsfw}, #{locked}, #{series},
+            #{airDate}, #{platform}, #{coverUrl},
+            #{images,typeHandler=com.anitrack.infra.dal.handler.AnimeImagesTypeHandler},
+            #{eps}, #{totalEpisodes}, #{volumes},
+            #{metaTags,typeHandler=com.anitrack.infra.dal.handler.StringListTypeHandler},
+            #{tags,typeHandler=com.anitrack.infra.dal.handler.AnimeTagListTypeHandler},
+            #{rating,typeHandler=com.anitrack.infra.dal.handler.RatingTypeHandler},
+            #{collection,typeHandler=com.anitrack.infra.dal.handler.CollectionTypeHandler},
+            #{infobox,typeHandler=com.anitrack.infra.dal.handler.InfoboxListTypeHandler})
     </insert>
 
     <update id="updateById" parameterType="com.anitrack.infra.dal.po.AnimePO">
         UPDATE t_anime
-        SET title_cn = #{titleCn},
+        SET type = #{type},
+            title_cn = #{titleCn},
             title_original = #{titleOriginal},
-            cover_url = #{coverUrl},
-            total_episodes = #{totalEpisodes},
+            summary = #{summary},
+            nsfw = #{nsfw},
+            locked = #{locked},
+            series = #{series},
             air_date = #{airDate},
-            summary = #{summary}
+            platform = #{platform},
+            cover_url = #{coverUrl},
+            images = #{images,typeHandler=com.anitrack.infra.dal.handler.AnimeImagesTypeHandler},
+            eps = #{eps},
+            total_episodes = #{totalEpisodes},
+            volumes = #{volumes},
+            meta_tags = #{metaTags,typeHandler=com.anitrack.infra.dal.handler.StringListTypeHandler},
+            tags = #{tags,typeHandler=com.anitrack.infra.dal.handler.AnimeTagListTypeHandler},
+            rating = #{rating,typeHandler=com.anitrack.infra.dal.handler.RatingTypeHandler},
+            collection = #{collection,typeHandler=com.anitrack.infra.dal.handler.CollectionTypeHandler},
+            infobox = #{infobox,typeHandler=com.anitrack.infra.dal.handler.InfoboxListTypeHandler}
         WHERE id = #{id}
     </update>
 

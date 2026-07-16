@@ -1,0 +1,14 @@
+ALTER TABLE t_anime
+    ADD COLUMN type INT DEFAULT NULL COMMENT '条目类型' AFTER bangumi_id,
+    ADD COLUMN nsfw TINYINT(1) DEFAULT 0 COMMENT 'NSFW标记' AFTER summary,
+    ADD COLUMN locked TINYINT(1) DEFAULT 0 COMMENT '锁定标记' AFTER nsfw,
+    ADD COLUMN series TINYINT(1) DEFAULT 0 COMMENT '系列主条目标记' AFTER locked,
+    ADD COLUMN platform VARCHAR(64) DEFAULT NULL COMMENT '平台' AFTER air_date,
+    ADD COLUMN images JSON DEFAULT NULL COMMENT '封面图多尺寸' AFTER cover_url,
+    ADD COLUMN eps INT DEFAULT NULL COMMENT '话数' AFTER images,
+    ADD COLUMN volumes INT DEFAULT NULL COMMENT '册数' AFTER total_episodes,
+    ADD COLUMN meta_tags JSON DEFAULT NULL COMMENT '维基tag' AFTER volumes,
+    ADD COLUMN tags JSON DEFAULT NULL COMMENT '用户标签' AFTER meta_tags,
+    ADD COLUMN rating JSON DEFAULT NULL COMMENT '评分' AFTER tags,
+    ADD COLUMN collection JSON DEFAULT NULL COMMENT '收藏统计' AFTER rating,
+    ADD COLUMN infobox JSON DEFAULT NULL COMMENT '信息框' AFTER collection;

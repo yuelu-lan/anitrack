@@ -8,6 +8,7 @@ const MENU_ITEMS = [
   { key: '/anime/search', label: <Link to="/anime/search">番剧搜索</Link> },
   { key: '/watchlist', label: <Link to="/watchlist">我的追番</Link> },
   { key: '/reviews', label: <Link to="/reviews">我的评价</Link> },
+  { key: '/rag', label: <Link to="/rag">番剧问答</Link> },
 ];
 
 export default function MainLayout() {

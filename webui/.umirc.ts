@@ -16,6 +16,7 @@ export default defineConfig({
     { path: '/anime/:animeId', component: 'AnimeDetail', wrappers: ['@/wrappers/auth'] },
     { path: '/watchlist', component: 'Watchlist', wrappers: ['@/wrappers/auth'] },
     { path: '/reviews', component: 'MyReviews', wrappers: ['@/wrappers/auth'] },
+    { path: '/rag', component: '@/pages/rag/index', wrappers: ['@/wrappers/auth'] },
   ],
   proxy: {
     '/api': {
