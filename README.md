@@ -115,13 +115,13 @@ anitrack/
 | `INTERNAL_TOKEN` | 与 Java 侧 `anitrack.rag.internal-token` 一致 |
 | `LLM_API_KEY` / `EMBEDDING_API_KEY` | 硅基流动 API key（LLM + embedding，通常同一个） |
 | `LLM_BASE_URL` / `EMBEDDING_BASE_URL` | 模型接口地址（默认硅基流动） |
-| `LLM_MODEL` / `EMBEDDING_MODEL` | 模型名（默认 `Qwen/Qwen2.5-7B-Instruct` / `BAAI/bge-large-zh-v1.5`） |
-| `CHROMA_URL` | Chroma 地址（默认 `http://localhost:8000`） |
+| `LLM_MODEL` / `EMBEDDING_MODEL` | 模型名（默认 `deepseek-ai/DeepSeek-V4-Flash` / `Qwen/Qwen3-Embedding-4B`） |
+| `CHROMA_URL` | Chroma 地址（默认 `http://localhost:8100`） |
 
 **启动 Chroma**（向量库，先于 rag-service）：
 
 ```bash
-pip install chromadb && chroma run --port 8000
+pip install chromadb && chroma run --port 8100
 # 或 docker compose up chroma
 ```
 

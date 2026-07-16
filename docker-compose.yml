@@ -37,7 +37,7 @@ services:
   chroma:
     image: chromadb/chroma:latest
     ports:
-      - "8000:8000"
+      - "8100:8100"
     volumes:
       - chroma-data:/chroma/chroma
 
@@ -48,7 +48,7 @@ services:
     environment:
       PORT: 8081
       INTERNAL_TOKEN: ${RAG_INTERNAL_TOKEN}
-      CHROMA_URL: http://chroma:8000
+      CHROMA_URL: http://chroma:8100
       COLLECTION_NAME: anime_wiki
       LLM_BASE_URL: https://api.siliconflow.cn/v1
       LLM_API_KEY: ${SILICONFLOW_API_KEY}
