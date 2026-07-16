@@ -172,7 +172,7 @@ docker compose up --build
 ### 启动说明
 
 - 服务默认监听 `8080` 端口，数据库表结构由 Flyway 自动创建（`db/migration/V1~V5`）
-- `local` / `docker` 两个 profile 会额外加载 `db/migration-dev/R__seed_demo_data.sql`，灌入演示数据（2 用户、4 番剧、5 追番、3 评价，覆盖全部追番状态）。演示账号：`alice` / `bob`，密码均为 `password123`
+- `local` / `docker` 两个 profile 会额外加载 `db/migration-dev/R__seed_demo_data.sql`，灌入演示数据（2 用户、4 番剧、5 追番、3 评价，覆盖全部追番状态）。演示账号：`alice` / `bob`，密码均为 `111111`
 - 不激活任何 profile（生产部署）时，仅执行建表脚本，不灌演示数据
 - MySQL 数据持久化在 `anitrack-mysql-data` 卷，`docker compose down` 保留数据，`docker compose down -v` 删除数据重新初始化
 
