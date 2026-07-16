@@ -17,6 +17,7 @@ export default defineConfig({
     { path: '/watchlist', component: 'Watchlist', wrappers: ['@/wrappers/auth'] },
     { path: '/reviews', component: 'MyReviews', wrappers: ['@/wrappers/auth'] },
     { path: '/rag', component: '@/pages/rag/index', wrappers: ['@/wrappers/auth'] },
+    { path: '/rag/ingest', component: '@/pages/rag/ingest', wrappers: ['@/wrappers/auth'] },
   ],
   proxy: {
     '/api': {
