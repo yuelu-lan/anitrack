@@ -11,4 +11,6 @@ public class BangumiProperties {
     private String userAgent;
     private Integer connectTimeoutMs;
     private Integer readTimeoutMs;
+    private String proxyHost;
+    private Integer proxyPort;
 }
