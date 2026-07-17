@@ -1,6 +1,7 @@
 package com.anitrack.infra.rag.gateway;
 
 import com.anitrack.domain.rag.model.RagDocument;
+import com.anitrack.domain.rag.model.RagDocumentSummary;
 import com.anitrack.domain.rag.model.RagQuery;
 import com.anitrack.infra.config.RagProperties;
 import okhttp3.mockwebserver.MockResponse;
@@ -52,5 +53,20 @@ class RagGatewayImplTest {
         String result = gateway.streamQuery(RagQuery.of("你好", null))
                 .collect(Collectors.joining());
         assertThat(result).isEqualTo("你好世界");
+    }
+
+    @Test
+    void listDocuments_returns_summaries() throws InterruptedException {
+        server.enqueue(new MockResponse()
+                .setHeader("Content-Type", "application/json")
+                .setBody("{\"documents\":[{\"animeId\":\"1\",\"title\":\"标题A\"},{\"animeId\":\"2\",\"title\":\"标题B\"}]}"));
+        List<RagDocumentSummary> docs = gateway.listDocuments();
+        assertThat(docs).hasSize(2);
+        assertThat(docs.get(0).getAnimeId()).isEqualTo(1L);
+        assertThat(docs.get(0).getTitle()).isEqualTo("标题A");
+        var req = server.takeRequest();
+        assertThat(req.getMethod()).isEqualTo("GET");
+        assertThat(req.getPath()).isEqualTo("/documents");
+        assertThat(req.getHeader("X-Internal-Token")).isEqualTo("token");
     }
 }

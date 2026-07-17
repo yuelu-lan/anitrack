@@ -2,6 +2,7 @@ package com.anitrack.infra.rag.gateway;
 
 import com.anitrack.domain.rag.gateway.RagGateway;
 import com.anitrack.domain.rag.model.RagDocument;
+import com.anitrack.domain.rag.model.RagDocumentSummary;
 import com.anitrack.domain.rag.model.RagQuery;
 import com.anitrack.infra.config.RagProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -82,7 +83,24 @@ public class RagGatewayImpl implements RagGateway {
         }
     }
 
+    @Override
+    public List<RagDocumentSummary> listDocuments() {
+        RestClient client = restClientBuilder.baseUrl(properties.getBaseUrl()).build();
+        DocumentsResponse resp = client.get().uri("/documents")
+                .header("X-Internal-Token", properties.getInternalToken())
+                .retrieve()
+                .body(DocumentsResponse.class);
+        if (resp == null || resp.documents() == null) {
+            return List.of();
+        }
+        return resp.documents().stream()
+                .map(d -> RagDocumentSummary.of(Long.parseLong(d.animeId()), d.title()))
+                .toList();
+    }
+
     private record IngestResponse(int ingested) {}
+    private record DocumentsResponse(List<DocumentItem> documents) {}
+    private record DocumentItem(String animeId, String title) {}
 
     private static class CharChunkIterator implements Iterator<String>, AutoCloseable {
         private static final int CHUNK_SIZE = 512;
