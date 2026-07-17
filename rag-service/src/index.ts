@@ -4,8 +4,10 @@ import { config } from "./config.js";
 import { authPlugin } from "./plugins/auth.js";
 import ingestRoute from "./routes/ingest.js";
 import queryRoute from "./routes/query.js";
+import documentsRoute from "./routes/documents.js";
 import { streamAnswer } from "./rag/chain.js";
 import { retrieve } from "./rag/retriever.js";
+import { listDocuments } from "./rag/vectorStore.js";
 
 const app = Fastify({ logger: true });
 
@@ -23,10 +25,12 @@ app.decorate("createModel", () =>
     streamUsage: false,
   }),
 );
+app.decorate("listDocuments", listDocuments);
 
 await app.register(authPlugin);
 await app.register(ingestRoute, { prefix: "/ingest" });
 await app.register(queryRoute, { prefix: "/query" });
+await app.register(documentsRoute, { prefix: "/documents" });
 
 const start = async () => {
   try {
