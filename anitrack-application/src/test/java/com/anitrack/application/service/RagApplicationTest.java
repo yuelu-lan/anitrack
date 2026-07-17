@@ -3,6 +3,7 @@ package com.anitrack.application.service;
 import com.anitrack.domain.anime.gateway.BangumiGateway;
 import com.anitrack.domain.anime.model.*;
 import com.anitrack.domain.rag.gateway.RagGateway;
+import com.anitrack.domain.rag.model.RagDocumentSummary;
 import com.anitrack.domain.rag.model.RagQuery;
 import java.time.LocalDate;
 import java.util.List;
@@ -70,6 +71,20 @@ class RagApplicationTest {
         assertThat(n).isEqualTo(1);
         verify(bangumi).listAnimeByYearRating(2026, 7.0);
         verify(rag).ingest(anyList());
+    }
+
+    @Test
+    void listDocuments_delegates_to_gateway() {
+        BangumiGateway bangumi = mock(BangumiGateway.class);
+        RagGateway rag = mock(RagGateway.class);
+        when(rag.listDocuments()).thenReturn(List.of(RagDocumentSummary.of(1L, "标题A")));
+
+        RagApplication app = new RagApplication(bangumi, rag);
+        List<RagDocumentSummary> docs = app.listDocuments();
+
+        assertThat(docs).hasSize(1);
+        assertThat(docs.get(0).getAnimeId()).isEqualTo(1L);
+        verify(rag).listDocuments();
     }
 
     private Anime animeFixture() {

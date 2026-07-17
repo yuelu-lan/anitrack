@@ -4,6 +4,7 @@ import com.anitrack.domain.anime.gateway.BangumiGateway;
 import com.anitrack.domain.anime.model.Anime;
 import com.anitrack.domain.rag.gateway.RagGateway;
 import com.anitrack.domain.rag.model.RagDocument;
+import com.anitrack.domain.rag.model.RagDocumentSummary;
 import com.anitrack.domain.rag.model.RagQuery;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -43,6 +44,10 @@ public class RagApplication {
         }
         List<RagDocument> docs = animes.stream().map(this::toDocument).toList();
         return ragGateway.ingest(docs);
+    }
+
+    public List<RagDocumentSummary> listDocuments() {
+        return ragGateway.listDocuments();
     }
 
     public Stream<String> streamChat(RagQuery query) {
