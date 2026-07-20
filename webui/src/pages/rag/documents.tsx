@@ -30,6 +30,15 @@ export default function RagDocumentsPage() {
   const columns: ColumnsType<RagDocumentSummary> = [
     { title: 'animeId', dataIndex: 'animeId', width: 120 },
     { title: '标题', dataIndex: 'title' },
+    { title: '原文名', dataIndex: 'originalName' },
+    { title: '放送日期', dataIndex: 'airDate', width: 120 },
+    {
+      title: '评分',
+      key: 'score',
+      render: (_, r) =>
+        r.score != null ? `${r.score} (${r.ratingTotal ?? 0}人)` : '-',
+    },
+    { title: '集数', dataIndex: 'totalEpisodes', width: 80 },
   ];
 
   return (
@@ -47,7 +56,7 @@ export default function RagDocumentsPage() {
           columns={columns}
           dataSource={filtered}
           loading={loading}
-          pagination={{ pageSize: 10 }}
+          pagination={{ pageSize: 10, showSizeChanger: true, pageSizeOptions: [10, 20, 50] }}
           size="middle"
         />
       </Space>

@@ -43,9 +43,17 @@ public class RagGatewayImpl implements RagGateway {
     public int ingest(List<RagDocument> documents) {
         RestClient client = restClientBuilder.baseUrl(properties.getBaseUrl()).build();
         var body = Map.of("documents", documents.stream()
-                .map(d -> Map.of(
-                        "pageContent", d.getPageContent(),
-                        "metadata", Map.of("animeId", d.getAnimeId(), "title", d.getTitle())))
+                .map(d -> {
+                    java.util.HashMap<String, Object> meta = new java.util.HashMap<>();
+                    meta.put("animeId", d.getAnimeId());
+                    if (d.getTitle() != null) meta.put("title", d.getTitle());
+                    if (d.getOriginalName() != null) meta.put("originalName", d.getOriginalName());
+                    if (d.getAirDate() != null) meta.put("airDate", d.getAirDate());
+                    if (d.getScore() != null) meta.put("score", d.getScore());
+                    if (d.getRatingTotal() != null) meta.put("ratingTotal", d.getRatingTotal());
+                    if (d.getTotalEpisodes() != null) meta.put("totalEpisodes", d.getTotalEpisodes());
+                    return Map.of("pageContent", d.getPageContent(), "metadata", meta);
+                })
                 .toList());
         var resp = client.post().uri("/ingest")
                 .header("X-Internal-Token", properties.getInternalToken())
@@ -96,7 +104,11 @@ public class RagGatewayImpl implements RagGateway {
         return resp.documents().stream()
                 .map(d -> {
                     try {
-                        return RagDocumentSummary.of(Long.parseLong(d.animeId()), d.title());
+                        return RagDocumentSummary.of(Long.parseLong(d.animeId()), d.title(),
+                                d.originalName(), d.airDate(),
+                                d.score() == null ? null : d.score().doubleValue(),
+                                d.ratingTotal() == null ? null : d.ratingTotal().intValue(),
+                                d.totalEpisodes() == null ? null : d.totalEpisodes().intValue());
                     } catch (NumberFormatException ex) {
                         log.warn("非法 animeId 跳过: {}", d.animeId());
                         return null;
@@ -108,7 +120,8 @@ public class RagGatewayImpl implements RagGateway {
 
     private record IngestResponse(int ingested) {}
     private record DocumentsResponse(List<DocumentItem> documents) {}
-    private record DocumentItem(String animeId, String title) {}
+    private record DocumentItem(String animeId, String title, String originalName,
+            String airDate, Number score, Number ratingTotal, Number totalEpisodes) {}
 
     private static class CharChunkIterator implements Iterator<String>, AutoCloseable {
         private static final int CHUNK_SIZE = 512;

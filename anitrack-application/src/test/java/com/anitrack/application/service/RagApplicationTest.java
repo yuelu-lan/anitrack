@@ -3,6 +3,7 @@ package com.anitrack.application.service;
 import com.anitrack.domain.anime.gateway.BangumiGateway;
 import com.anitrack.domain.anime.model.*;
 import com.anitrack.domain.rag.gateway.RagGateway;
+import com.anitrack.domain.rag.model.RagDocument;
 import com.anitrack.domain.rag.model.RagDocumentSummary;
 import com.anitrack.domain.rag.model.RagQuery;
 import java.time.LocalDate;
@@ -25,7 +26,20 @@ class RagApplicationTest {
         int n = app.ingestAnimeWiki(List.of(1L));
 
         assertThat(n).isEqualTo(1);
-        verify(rag).ingest(anyList());
+        @SuppressWarnings("unchecked")
+        org.mockito.ArgumentCaptor<List<RagDocument>> captor =
+                org.mockito.ArgumentCaptor.forClass(List.class);
+        verify(rag).ingest(captor.capture());
+        List<RagDocument> docs = captor.getValue();
+        assertThat(docs).hasSize(1);
+        RagDocument d = docs.get(0);
+        assertThat(d.getAnimeId()).isEqualTo("1");
+        assertThat(d.getTitle()).isEqualTo("中文名");
+        assertThat(d.getOriginalName()).isEqualTo("原名");
+        assertThat(d.getAirDate()).isEqualTo("2024-04-01");
+        assertThat(d.getScore()).isEqualTo(8.5);
+        assertThat(d.getRatingTotal()).isEqualTo(100);
+        assertThat(d.getTotalEpisodes()).isEqualTo(12);
     }
 
     @Test

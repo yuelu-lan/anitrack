@@ -32,7 +32,9 @@ public class RagIngestController {
     @GetMapping("/documents")
     public ResponseResult<List<RagDocumentSummaryResponse>> documents() {
         List<RagDocumentSummaryResponse> list = ragApplication.listDocuments().stream()
-                .map(s -> new RagDocumentSummaryResponse(s.getAnimeId(), s.getTitle()))
+                .map(s -> new RagDocumentSummaryResponse(s.getAnimeId(), s.getTitle(),
+                        s.getOriginalName(), s.getAirDate(), s.getScore(),
+                        s.getRatingTotal(), s.getTotalEpisodes()))
                 .toList();
         return ResponseResult.success(list);
     }

@@ -4,7 +4,18 @@ import { ingestDocuments } from "../rag/vectorStore.js";
 export default async function ingestRoute(app: FastifyInstance) {
   app.post("/", async (req, reply) => {
     const { documents } = req.body as {
-      documents: { pageContent: string; metadata: { animeId: string; title: string } }[];
+      documents: {
+        pageContent: string;
+        metadata: {
+          animeId: string;
+          title: string;
+          originalName?: string;
+          airDate?: string;
+          score?: number;
+          ratingTotal?: number;
+          totalEpisodes?: number;
+        };
+      }[];
     };
     if (!documents?.length) {
       return reply.code(400).send({ error: "documents required" });

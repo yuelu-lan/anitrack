@@ -13,6 +13,11 @@ export async function ingestByCriteria(year: number, minRating: number) {
 export interface RagDocumentSummary {
   animeId: number;
   title: string;
+  originalName?: string;
+  airDate?: string;
+  score?: number;
+  ratingTotal?: number;
+  totalEpisodes?: number;
 }
 
 export async function listDocuments() {
