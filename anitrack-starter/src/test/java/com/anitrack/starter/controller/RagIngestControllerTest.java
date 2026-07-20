@@ -39,4 +39,10 @@ class RagIngestControllerTest {
                 .andExpect(jsonPath("$.data[0].title").value("标题A"))
                 .andExpect(jsonPath("$.data[1].animeId").value(2));
     }
+
+    @Test
+    void documents_returns_401_without_jwt() throws Exception {
+        mockMvc.perform(get("/api/rag/documents"))
+                .andExpect(status().isUnauthorized());
+    }
 }

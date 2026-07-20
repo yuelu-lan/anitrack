@@ -64,9 +64,33 @@ class RagGatewayImplTest {
         assertThat(docs).hasSize(2);
         assertThat(docs.get(0).getAnimeId()).isEqualTo(1L);
         assertThat(docs.get(0).getTitle()).isEqualTo("标题A");
+        assertThat(docs.get(1).getAnimeId()).isEqualTo(2L);
+        assertThat(docs.get(1).getTitle()).isEqualTo("标题B");
         var req = server.takeRequest();
         assertThat(req.getMethod()).isEqualTo("GET");
         assertThat(req.getPath()).isEqualTo("/documents");
         assertThat(req.getHeader("X-Internal-Token")).isEqualTo("token");
+    }
+
+    @Test
+    void listDocuments_handles_null_response() throws InterruptedException {
+        server.enqueue(new MockResponse()
+                .setHeader("Content-Type", "application/json")
+                .setBody("{\"documents\":null}"));
+        List<RagDocumentSummary> docs = gateway.listDocuments();
+        assertThat(docs).isEmpty();
+    }
+
+    @Test
+    void listDocuments_skips_invalid_animeId() throws InterruptedException {
+        server.enqueue(new MockResponse()
+                .setHeader("Content-Type", "application/json")
+                .setBody("{\"documents\":[{\"animeId\":\"1\",\"title\":\"标题A\"},{\"animeId\":\"bad\",\"title\":\"坏条目\"},{\"animeId\":\"3\",\"title\":\"标题C\"}]}"));
+        List<RagDocumentSummary> docs = gateway.listDocuments();
+        assertThat(docs).hasSize(2);
+        assertThat(docs.get(0).getAnimeId()).isEqualTo(1L);
+        assertThat(docs.get(0).getTitle()).isEqualTo("标题A");
+        assertThat(docs.get(1).getAnimeId()).isEqualTo(3L);
+        assertThat(docs.get(1).getTitle()).isEqualTo("标题C");
     }
 }

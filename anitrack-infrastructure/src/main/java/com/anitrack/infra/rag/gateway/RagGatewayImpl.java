@@ -94,7 +94,15 @@ public class RagGatewayImpl implements RagGateway {
             return List.of();
         }
         return resp.documents().stream()
-                .map(d -> RagDocumentSummary.of(Long.parseLong(d.animeId()), d.title()))
+                .map(d -> {
+                    try {
+                        return RagDocumentSummary.of(Long.parseLong(d.animeId()), d.title());
+                    } catch (NumberFormatException ex) {
+                        log.warn("非法 animeId 跳过: {}", d.animeId());
+                        return null;
+                    }
+                })
+                .filter(java.util.Objects::nonNull)
                 .toList();
     }
 
