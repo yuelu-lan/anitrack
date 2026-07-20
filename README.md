@@ -8,8 +8,8 @@
 - Phase 1a：番剧目录（Bangumi ACL）
 - Phase 1b：追番核心（状态机/进度）
 - Phase 2：评价（评分/评论）
-- RAG：番剧百科问答（独立 rag-service + Chroma 向量库，前端 ai-sdk 流式问答）
-- 前端：`webui/`（UmiJS Max + Ant Design，覆盖追番/评价/RAG 问答操作界面）
+- RAG：番剧百科问答（独立 rag-service + Chroma 向量库）——支持手动/按条件批量采集（年份+评分）入库、已入库番剧列表查看、前端 ai-sdk 流式问答
+- 前端：`webui/`（UmiJS Max + Ant Design，覆盖追番/评价/RAG 采集/已入库列表/番剧问答操作界面）
 
 ## 技术栈
 
@@ -207,6 +207,8 @@ npm run dev
 | POST | `/api/review/list_by_anime` | 查询某番剧的评价列表（分页，含评论人昵称/头像） |
 | POST | `/api/review/my_list` | 查询我的评价列表（含番剧标题/封面） |
 | POST | `/api/rag/ingest` | 触发番剧百科采集入库（参数 `bangumiIds`，拉 Bangumi 详情写入 Chroma） |
+| POST | `/api/rag/ingest_by_criteria` | 按条件批量采集入库（参数 `year`/`minRating`，拉 Bangumi 年度动画过滤评分后写入 Chroma） |
+| GET | `/api/rag/documents` | 查询已入库番剧列表（返回 animeId/标题/原文名/放送/评分） |
 | POST | `/api/rag/chat` | 番剧百科问答（流式返回，`text/plain` 逐 token 输出） |
 
 除注册/登录外，其余接口均需携带 `Authorization: Bearer <token>` 请求头。
