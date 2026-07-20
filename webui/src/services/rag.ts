@@ -17,7 +17,6 @@ export interface RagDocumentSummary {
   airDate?: string;
   score?: number;
   ratingTotal?: number;
-  totalEpisodes?: number;
 }
 
 export async function listDocuments() {

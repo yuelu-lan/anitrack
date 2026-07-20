@@ -59,7 +59,7 @@ class RagGatewayImplTest {
     void listDocuments_returns_summaries() throws InterruptedException {
         server.enqueue(new MockResponse()
                 .setHeader("Content-Type", "application/json")
-                .setBody("{\"documents\":[{\"animeId\":\"1\",\"title\":\"标题A\",\"originalName\":\"原A\",\"airDate\":\"2024-04-01\",\"score\":8.5,\"ratingTotal\":100,\"totalEpisodes\":12},{\"animeId\":\"2\",\"title\":\"标题B\",\"originalName\":\"原B\",\"airDate\":\"2025-01-01\",\"score\":9.0,\"ratingTotal\":200,\"totalEpisodes\":24}]}"));
+                .setBody("{\"documents\":[{\"animeId\":\"1\",\"title\":\"标题A\",\"originalName\":\"原A\",\"airDate\":\"2024-04-01\",\"score\":8.5,\"ratingTotal\":100},{\"animeId\":\"2\",\"title\":\"标题B\",\"originalName\":\"原B\",\"airDate\":\"2025-01-01\",\"score\":9.0,\"ratingTotal\":200}]}"));
         List<RagDocumentSummary> docs = gateway.listDocuments();
         assertThat(docs).hasSize(2);
         assertThat(docs.get(0).getAnimeId()).isEqualTo(1L);
@@ -68,14 +68,12 @@ class RagGatewayImplTest {
         assertThat(docs.get(0).getAirDate()).isEqualTo("2024-04-01");
         assertThat(docs.get(0).getScore()).isEqualTo(8.5);
         assertThat(docs.get(0).getRatingTotal()).isEqualTo(100);
-        assertThat(docs.get(0).getTotalEpisodes()).isEqualTo(12);
         assertThat(docs.get(1).getAnimeId()).isEqualTo(2L);
         assertThat(docs.get(1).getTitle()).isEqualTo("标题B");
         assertThat(docs.get(1).getOriginalName()).isEqualTo("原B");
         assertThat(docs.get(1).getAirDate()).isEqualTo("2025-01-01");
         assertThat(docs.get(1).getScore()).isEqualTo(9.0);
         assertThat(docs.get(1).getRatingTotal()).isEqualTo(200);
-        assertThat(docs.get(1).getTotalEpisodes()).isEqualTo(24);
         var req = server.takeRequest();
         assertThat(req.getMethod()).isEqualTo("GET");
         assertThat(req.getPath()).isEqualTo("/documents");

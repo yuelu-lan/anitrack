@@ -38,7 +38,6 @@ export default function RagDocumentsPage() {
       render: (_, r) =>
         r.score != null ? `${r.score} (${r.ratingTotal ?? 0}人)` : '-',
     },
-    { title: '集数', dataIndex: 'totalEpisodes', width: 80 },
   ];
 
   return (

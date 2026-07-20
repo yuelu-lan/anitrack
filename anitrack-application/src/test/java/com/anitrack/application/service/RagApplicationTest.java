@@ -39,7 +39,6 @@ class RagApplicationTest {
         assertThat(d.getAirDate()).isEqualTo("2024-04-01");
         assertThat(d.getScore()).isEqualTo(8.5);
         assertThat(d.getRatingTotal()).isEqualTo(100);
-        assertThat(d.getTotalEpisodes()).isEqualTo(12);
     }
 
     @Test

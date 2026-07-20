@@ -13,7 +13,6 @@ export default async function ingestRoute(app: FastifyInstance) {
           airDate?: string;
           score?: number;
           ratingTotal?: number;
-          totalEpisodes?: number;
         };
       }[];
     };

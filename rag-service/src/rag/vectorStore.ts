@@ -25,7 +25,6 @@ export async function listDocuments(): Promise<{
   airDate?: string;
   score?: number;
   ratingTotal?: number;
-  totalEpisodes?: number;
 }[]> {
   const store = await getVectorStore();
   const col = store.collection;
@@ -42,7 +41,6 @@ export async function listDocuments(): Promise<{
       airDate: m?.airDate as string | undefined,
       score: m?.score as number | undefined,
       ratingTotal: m?.ratingTotal as number | undefined,
-      totalEpisodes: m?.totalEpisodes as number | undefined,
     };
   });
 }

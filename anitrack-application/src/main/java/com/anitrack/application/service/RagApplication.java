@@ -82,7 +82,7 @@ public class RagApplication {
         return RagDocument.of(sb.toString(), String.valueOf(anime.getBangumiId()),
                 str(anime.getTitleCn()), str(anime.getTitleOriginal()),
                 anime.getAirDate() == null ? null : anime.getAirDate().toString(),
-                scoreOrNull(anime), totalOrNull(anime), anime.getTotalEpisodes());
+                scoreOrNull(anime), totalOrNull(anime));
     }
 
     private String str(String s) { return s == null ? "" : s; }

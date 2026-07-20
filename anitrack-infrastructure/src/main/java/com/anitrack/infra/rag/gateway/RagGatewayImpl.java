@@ -51,7 +51,6 @@ public class RagGatewayImpl implements RagGateway {
                     if (d.getAirDate() != null) meta.put("airDate", d.getAirDate());
                     if (d.getScore() != null) meta.put("score", d.getScore());
                     if (d.getRatingTotal() != null) meta.put("ratingTotal", d.getRatingTotal());
-                    if (d.getTotalEpisodes() != null) meta.put("totalEpisodes", d.getTotalEpisodes());
                     return Map.of("pageContent", d.getPageContent(), "metadata", meta);
                 })
                 .toList());
@@ -107,8 +106,7 @@ public class RagGatewayImpl implements RagGateway {
                         return RagDocumentSummary.of(Long.parseLong(d.animeId()), d.title(),
                                 d.originalName(), d.airDate(),
                                 d.score() == null ? null : d.score().doubleValue(),
-                                d.ratingTotal() == null ? null : d.ratingTotal().intValue(),
-                                d.totalEpisodes() == null ? null : d.totalEpisodes().intValue());
+                                d.ratingTotal() == null ? null : d.ratingTotal().intValue());
                     } catch (NumberFormatException ex) {
                         log.warn("非法 animeId 跳过: {}", d.animeId());
                         return null;
@@ -121,7 +119,7 @@ public class RagGatewayImpl implements RagGateway {
     private record IngestResponse(int ingested) {}
     private record DocumentsResponse(List<DocumentItem> documents) {}
     private record DocumentItem(String animeId, String title, String originalName,
-            String airDate, Number score, Number ratingTotal, Number totalEpisodes) {}
+            String airDate, Number score, Number ratingTotal) {}
 
     private static class CharChunkIterator implements Iterator<String>, AutoCloseable {
         private static final int CHUNK_SIZE = 512;

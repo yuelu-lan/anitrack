@@ -34,7 +34,7 @@ public class RagIngestController {
         List<RagDocumentSummaryResponse> list = ragApplication.listDocuments().stream()
                 .map(s -> new RagDocumentSummaryResponse(s.getAnimeId(), s.getTitle(),
                         s.getOriginalName(), s.getAirDate(), s.getScore(),
-                        s.getRatingTotal(), s.getTotalEpisodes()))
+                        s.getRatingTotal()))
                 .toList();
         return ResponseResult.success(list);
     }

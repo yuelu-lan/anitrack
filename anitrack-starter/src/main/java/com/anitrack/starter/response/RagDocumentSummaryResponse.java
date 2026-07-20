@@ -12,5 +12,4 @@ public class RagDocumentSummaryResponse {
     private final String airDate;
     private final Double score;
     private final Integer ratingTotal;
-    private final Integer totalEpisodes;
 }

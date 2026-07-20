@@ -28,8 +28,8 @@ class RagIngestControllerTest {
         when(jwtTokenProvider.validateToken(any())).thenReturn(true);
         when(jwtTokenProvider.getUserId(any())).thenReturn(1L);
         when(ragApplication.listDocuments()).thenReturn(List.of(
-                RagDocumentSummary.of(1L, "标题A", "原A", "2024-04-01", 8.5, 100, 12),
-                RagDocumentSummary.of(2L, "标题B", null, null, null, null, null)));
+                RagDocumentSummary.of(1L, "标题A", "原A", "2024-04-01", 8.5, 100),
+                RagDocumentSummary.of(2L, "标题B", null, null, null, null)));
 
         mockMvc.perform(get("/api/rag/documents")
                         .header("Authorization", "Bearer test-token"))
@@ -41,7 +41,6 @@ class RagIngestControllerTest {
                 .andExpect(jsonPath("$.data[0].airDate").value("2024-04-01"))
                 .andExpect(jsonPath("$.data[0].score").value(8.5))
                 .andExpect(jsonPath("$.data[0].ratingTotal").value(100))
-                .andExpect(jsonPath("$.data[0].totalEpisodes").value(12))
                 .andExpect(jsonPath("$.data[1].animeId").value(2));
     }
 
