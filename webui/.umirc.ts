@@ -18,6 +18,7 @@ export default defineConfig({
     { path: '/reviews', component: 'MyReviews', wrappers: ['@/wrappers/auth'] },
     { path: '/rag', component: '@/pages/rag/index', wrappers: ['@/wrappers/auth'] },
     { path: '/rag/ingest', component: '@/pages/rag/ingest', wrappers: ['@/wrappers/auth'] },
+    { path: '/rag/documents', component: '@/pages/rag/documents', wrappers: ['@/wrappers/auth'] },
   ],
   proxy: {
     '/api': {

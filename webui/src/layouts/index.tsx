@@ -9,6 +9,7 @@ const MENU_ITEMS = [
   { key: '/watchlist', label: <Link to="/watchlist">我的追番</Link> },
   { key: '/reviews', label: <Link to="/reviews">我的评价</Link> },
   { key: '/rag/ingest', label: <Link to="/rag/ingest">RAG 采集</Link> },
+  { key: '/rag/documents', label: <Link to="/rag/documents">已入库</Link> },
   { key: '/rag', label: <Link to="/rag">番剧问答</Link> },
 ];
 

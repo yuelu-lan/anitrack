@@ -9,3 +9,19 @@ export async function ingestByCriteria(year: number, minRating: number) {
   });
   return res.data;
 }
+
+export interface RagDocumentSummary {
+  animeId: number;
+  title: string;
+  originalName?: string;
+  airDate?: string;
+  score?: number;
+  ratingTotal?: number;
+}
+
+export async function listDocuments() {
+  const res = await request<ApiResult<RagDocumentSummary[]>>('/api/rag/documents', {
+    method: 'GET',
+  });
+  return res.data;
+}

@@ -4,6 +4,7 @@ import com.anitrack.domain.anime.gateway.BangumiGateway;
 import com.anitrack.domain.anime.model.Anime;
 import com.anitrack.domain.rag.gateway.RagGateway;
 import com.anitrack.domain.rag.model.RagDocument;
+import com.anitrack.domain.rag.model.RagDocumentSummary;
 import com.anitrack.domain.rag.model.RagQuery;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -45,6 +46,10 @@ public class RagApplication {
         return ragGateway.ingest(docs);
     }
 
+    public List<RagDocumentSummary> listDocuments() {
+        return ragGateway.listDocuments();
+    }
+
     public Stream<String> streamChat(RagQuery query) {
         return ragGateway.streamQuery(query);
     }
@@ -74,8 +79,19 @@ public class RagApplication {
             sb.append("评分：").append(anime.getRating().getScore())
               .append("（").append(anime.getRating().getTotal()).append("人）\n");
         }
-        return RagDocument.of(sb.toString(), String.valueOf(anime.getBangumiId()), str(anime.getTitleCn()));
+        return RagDocument.of(sb.toString(), String.valueOf(anime.getBangumiId()),
+                str(anime.getTitleCn()), str(anime.getTitleOriginal()),
+                anime.getAirDate() == null ? null : anime.getAirDate().toString(),
+                scoreOrNull(anime), totalOrNull(anime));
     }
 
     private String str(String s) { return s == null ? "" : s; }
+
+    private Double scoreOrNull(Anime anime) {
+        return anime.getRating() == null ? null : anime.getRating().getScore();
+    }
+
+    private Integer totalOrNull(Anime anime) {
+        return anime.getRating() == null ? null : anime.getRating().getTotal();
+    }
 }
